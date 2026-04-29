@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Verify M3 — Tu Vi Local</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 24px; max-width: 1100px; line-height: 1.6; }
+    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; }
+    h2 { color: #2c3e50; margin-top: 32px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+    h3 { color: #34495e; margin-top: 20px; }
+    pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 13px; }
+    .pass { color: #27ae60; }
+    .fail { color: #c0392b; font-weight: bold; }
+    .info { color: #2980b9; }
+    .warn { color: #d35400; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+    th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; }
+    th { background: #f0f0f0; }
+    .summary { background: #e8f5e9; padding: 16px; border-radius: 4px; margin: 24px 0; font-size: 16px; }
+    .fail-summary { background: #ffebee; }
+    code { background: #ecf0f1; padding: 2px 6px; border-radius: 2px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>🔬 Verify M3 — Vòng + Đại hạn + Lưu niên + Tử Vân</h1>
+  <p class="info">Verify với <strong>CS-013 (Nữ Mậu Thìn 1988, giờ Ngọ)</strong>. Reference doc: <code>vault/02-Quy Tắc/An Sao/An Sao Tử Vi - Thuật Toán Đầy Đủ.md</code> Section 7-11.</p>
+
+  <div id="output"></div>
+
+  <script type="module">
+    import { duongToAm, tinhChiGio, tinhCanChiGio } from '../js/lunar.js';
+    import { anCungMenh, anCungThan, an12Cung, anCanCung, tinhThanCu } from '../js/cung.js';
+    import { anCuc, getCucInfo } from '../js/menh_than_cuc.js';
+    import { an14ChinhTinh } from '../js/chinh_tinh.js';
+    import { anToanBoPhuTinh } from '../js/phu_tinh.js';
+    import {
+      anVongThaiTue, anVongBacSi, anVongTruongSinh, isVongThuan
+    } from '../js/vong.js';
+    import {
+      anDaiHan, timDaiHanHienTai, anTieuHan, anTuHoaDaiHan
+    } from '../js/dai_han.js';
+    import {
+      anLuuTuHoa, anLuuTuanTriet, anSaoLuu, isTamTaiYear, anLuuNien
+    } from '../js/luu_nien.js';
+    import { anSaoChuCuc, getLaiNhanCung, anNguyenThan, anTuVanFull } from '../js/tu_van.js';
+    import { CHI, CHI_INDEX, LOC_TON } from '../js/data.js';
+
+    const out = document.getElementById('output');
+    let passCount = 0, failCount = 0;
+
+    const log = (h) => out.insertAdjacentHTML('beforeend', h);
+    const chiName = (i) => CHI[i] + `(${i})`;
+
+    function check(label, expected, actual) {
+      const pass = expected === actual;
+      if (pass) passCount++; else failCount++;
+      const sym = pass ? '✓' : '✗';
+      const cls = pass ? 'pass' : 'fail';
+      log(`<div class="${cls}">${sym} ${label}: <code>expected=${expected}, actual=${actual}</code></div>`);
+    }
+
+    // ============================================================
+    // Setup CS-013 base data
+    // ============================================================
+    log(`<h2>Setup — CS-013 base</h2>`);
+
+    const input = {
+      nam: 1988, thang: 4, ngay: 11, gio: 11, phut: 25,
+      gioiTinh: 'nu',
+    };
+
+    const lich = duongToAm(input);
+    const chiGio = tinhChiGio(input.gio, input.phut);
+    const canChiGio = tinhCanChiGio(lich.canChi.ngay.can, chiGio);
+    const canNam = lich.canChi.nam.can;     // Mậu
+    const chiNam = lich.canChi.nam.chi;     // Thìn
+    const thangAm = lich.am.thang;          // 2
+    const ngayAm = lich.am.ngay;            // 25
+
+    const cungMenhChi = anCungMenh(thangAm, chiGio);   // 9 = Dậu
+    const cungThanChi = anCungThan(thangAm, chiGio);   // 9 = Dậu
+    const cuc = anCuc(canNam, CHI[cungMenhChi]);       // Mộc Tam
+    const cucInfo = getCucInfo(cuc);
+    const cung12 = an12Cung(cungMenhChi);
+    const canCung = anCanCung(canNam);
+
+    const chinhTinh = an14ChinhTinh(cuc, ngayAm);
+    const phuTinh = anToanBoPhuTinh({
+      thangAm, chiGio, canNam, chiNam, ngayAm,
+      cungMenhChi, cungThanChi,
+      cungNoBocChi: cung12[5].chiIdx,
+      cungTatAchChi: cung12[7].chiIdx,
+    });
+    const viTriSao = { ...chinhTinh, ...phuTinh };
+
+    log(`<table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Năm sinh</td><td>${canNam} ${chiNam} (Dương Nữ)</td></tr>
+      <tr><td>Cục</td><td>${cuc} (số ${cucInfo.so})</td></tr>
+      <tr><td>Cung Mệnh</td><td>${chiName(cungMenhChi)} = Dậu</td></tr>
+      <tr><td>Lộc Tồn</td><td>${chiName(viTriSao['Lộc Tồn'])} = Tỵ</td></tr>
+      <tr><td>Tham Lang (Sao chủ Cục Mộc Tam)</td><td>${chiName(viTriSao['Tham Lang'])}</td></tr>
+      <tr><td>Liêm Trinh (Mệnh chủ Thìn)</td><td>${chiName(viTriSao['Liêm Trinh'])}</td></tr>
+    </table>`);
+
+    // ============================================================
+    // 1. VÒNG THÁI TUẾ
+    // ============================================================
+    log(`<h2>1. Vòng Thái Tuế (Thái Tuế = Chi năm Thìn)</h2>`);
+    const thaiTue = anVongThaiTue(chiNam);
+    check("Thái Tuế ở Thìn(4)", 4, thaiTue["Thái Tuế"]);
+    check("Thiếu Dương Tỵ(5)", 5, thaiTue["Thiếu Dương"]);
+    check("Tang Môn Ngọ(6)", 6, thaiTue["Tang Môn"]);
+    check("Tuế Phá Tuất(10) [đối Thái Tuế]", 10, thaiTue["Tuế Phá"]);
+    check("Bạch Hổ Tí(0)", 0, thaiTue["Bạch Hổ"]);
+    check("Phúc Đức Sửu(1)", 1, thaiTue["Phúc Đức"]);
+
+    // ============================================================
+    // 2. VÒNG BÁC SĨ
+    // ============================================================
+    log(`<h2>2. Vòng Bác Sĩ (Lộc Tồn Tỵ + Dương Nữ NGHỊCH)</h2>`);
+    const isThuan = isVongThuan(canNam, input.gioiTinh);   // Mậu Thìn nữ → Dương Nữ → false
+    check("Dương Nữ → NGHỊCH", false, isThuan);
+
+    const locTonChi = viTriSao["Lộc Tồn"];
+    const bacSi = anVongBacSi(locTonChi, isThuan);
+    check("Bác Sĩ ở Tỵ(5)", 5, bacSi["Bác Sĩ"]);
+    check("Lực Sĩ ở Thìn(4) [nghịch]", 4, bacSi["Lực Sĩ"]);
+    check("Thanh Long Mão(3)", 3, bacSi["Thanh Long"]);
+    check("Phi Liêm Hợi(11) [đối Bác Sĩ]", 11, bacSi["Phi Liêm"]);
+    check("Hỷ Thần Tuất(10)", 10, bacSi["Hỷ Thần"]);
+
+    // ============================================================
+    // 3. VÒNG TRƯỜNG SINH
+    // ============================================================
+    log(`<h2>3. Vòng Trường Sinh (Mộc Tam → khởi Hợi + NGHỊCH)</h2>`);
+    const truongSinh = anVongTruongSinh(cuc, isThuan);
+    check("Trường Sinh ở Hợi(11)", 11, truongSinh["Trường Sinh"]);
+    check("Mộc Dục Tuất(10) [nghịch]", 10, truongSinh["Mộc Dục"]);
+    check("Đế Vượng Mùi(7) [(11-4+12)%12]", 7, truongSinh["Đế Vượng"]);
+    check("Bệnh Tỵ(5) [đối Trường Sinh]", 5, truongSinh["Bệnh"]);
+    check("Tuyệt Dần(2)", 2, truongSinh["Tuyệt"]);
+    log(`<p class="info">→ Cung Tỵ (Tài Bạch + Lộc Tồn) đóng pha <strong>Bệnh</strong>: pattern "tài có nhưng yếu" (đã ghi trong Section 7.3 doc).</p>`);
+
+    // ============================================================
+    // 4. ĐẠI HẠN
+    // ============================================================
+    log(`<h2>4. Đại hạn (Mộc Tam, Mệnh Dậu, Dương Nữ NGHỊCH)</h2>`);
+    const currentAge = 39;   // CS-013 = 2026
+    const daiHan = anDaiHan(cuc, cungMenhChi, isThuan, currentAge);
+
+    check("ĐH1 đóng Mệnh Dậu(9)", 9, daiHan[0].chiIdx);
+    check("ĐH1 tuổi 3-12 (Mộc Tam)", 3, daiHan[0].ageStart);
+    check("ĐH2 đóng Thân(8) [nghịch]", 8, daiHan[1].chiIdx);
+    check("ĐH3 đóng Mùi(7)", 7, daiHan[2].chiIdx);
+    check("ĐH4 đóng Ngọ(6)", 6, daiHan[3].chiIdx);
+    check("ĐH4 tuổi 33-42", 33, daiHan[3].ageStart);
+    check("ĐH4 isCurrent (39t)", true, daiHan[3].isCurrent);
+
+    const dhHienTai = timDaiHanHienTai(daiHan);
+    check("ĐH hiện tại = ĐH4 (Tử Tức Ngọ)", 4, dhHienTai.index);
+
+    // Tứ Hoá ĐH4 — Can cung Ngọ
+    const canDH4 = canCung[6];   // Can cung Ngọ
+    log(`<p class="info">Can cung ĐH4 (Ngọ) = <code>${canDH4}</code></p>`);
+    const tuHoaDH4 = anTuHoaDaiHan(canDH4, viTriSao);
+    log(`<table><tr><th>Hoá ĐH4</th><th>Sao</th><th>Chi</th></tr>
+      <tr><td>Lộc</td><td>${tuHoaDH4.hoaLoc.sao}</td><td>${chiName(tuHoaDH4.hoaLoc.chiIdx)}</td></tr>
+      <tr><td>Quyền</td><td>${tuHoaDH4.hoaQuyen.sao}</td><td>${chiName(tuHoaDH4.hoaQuyen.chiIdx)}</td></tr>
+      <tr><td>Khoa</td><td>${tuHoaDH4.hoaKhoa.sao}</td><td>${chiName(tuHoaDH4.hoaKhoa.chiIdx)}</td></tr>
+      <tr><td>Kỵ</td><td>${tuHoaDH4.hoaKy.sao}</td><td>${chiName(tuHoaDH4.hoaKy.chiIdx)}</td></tr>
+      </table>`);
+
+    // ============================================================
+    // 5. TIỂU HẠN
+    // ============================================================
+    log(`<h2>5. Tiểu hạn (Thìn → khởi Tuất, Nữ NGHỊCH)</h2>`);
+    // Tam hợp Thìn = Thân Tí Thìn → khởi Tuất (chi 10).
+    // Tuổi 1 ở Tuất; Nữ NGHỊCH → tuổi tăng → chi giảm.
+    // Tuổi 39: offset = 38 % 12 = 2 → (10 - 2 + 144) % 12 = 8 = Thân
+    const tieuHan39 = anTieuHan(chiNam, input.gioiTinh, 39);
+    check("Tiểu hạn 39t = Thân(8)", 8, tieuHan39.chiIdx);
+
+    const tieuHan1 = anTieuHan(chiNam, input.gioiTinh, 1);
+    check("Tiểu hạn 1t = Tuất(10) [khởi]", 10, tieuHan1.chiIdx);
+
+    // ============================================================
+    // 6. LƯU NIÊN 2026 = BÍNH NGỌ
+    // ============================================================
+    log(`<h2>6. Lưu niên năm 2026 (Bính Ngọ)</h2>`);
+    const luuNien = anLuuNien("Bính", "Ngọ", chiNam, viTriSao);
+
+    check("Lưu Thái Tuế = Ngọ(6)", 6, luuNien.luuThaiTue.chiIdx);
+
+    // Lưu Tứ Hoá Bính: Lộc Đồng, Quyền Cơ, Khoa Xương, Kỵ Liêm
+    check("L.Hoá Lộc = Thiên Đồng", "Thiên Đồng", luuNien.luuTuHoa.hoaLoc.sao);
+    check("L.Hoá Quyền = Thiên Cơ", "Thiên Cơ", luuNien.luuTuHoa.hoaQuyen.sao);
+    check("L.Hoá Khoa = Văn Xương", "Văn Xương", luuNien.luuTuHoa.hoaKhoa.sao);
+    check("L.Hoá Kỵ = Liêm Trinh", "Liêm Trinh", luuNien.luuTuHoa.hoaKy.sao);
+
+    // Lưu Tuần (Bính Ngọ thuộc tuần Giáp Thìn → Dần-Mão)
+    log(`<p class="info">Lưu Tuần: <code>${JSON.stringify(luuNien.luuTuanTriet.luuTuan)}</code></p>`);
+    const luuTuanSorted = [...luuNien.luuTuanTriet.luuTuan].sort();
+    check("L.Tuần = [Dần, Mão]", JSON.stringify(["Dần", "Mão"]), JSON.stringify(luuTuanSorted));
+
+    // Lưu Triệt Bính → Thìn-Tỵ
+    log(`<p class="info">Lưu Triệt: <code>${JSON.stringify(luuNien.luuTuanTriet.luuTriet)}</code></p>`);
+    const luuTrietSorted = [...luuNien.luuTuanTriet.luuTriet].sort();
+    check("L.Triệt = [Thìn, Tỵ]", JSON.stringify(["Thìn", "Tỵ"]), JSON.stringify(luuTrietSorted));
+
+    // Sao lưu
+    const sl = luuNien.saoLuu;
+    check("L.Lộc Tồn (Bính → Tỵ=5)", 5, sl["L.Lộc Tồn"]);
+    check("L.Kình Dương = Ngọ(6)", 6, sl["L.Kình Dương"]);
+    check("L.Đà La = Thìn(4)", 4, sl["L.Đà La"]);
+    check("L.Tang Môn = Thân(8)", 8, sl["L.Tang Môn"]);
+    check("L.Bạch Hổ = Dần(2)", 2, sl["L.Bạch Hổ"]);
+    check("L.Tuế Phá = Tí(0)", 0, sl["L.Tuế Phá"]);
+
+    // Tam Tai
+    check("Tam Tai 2026 cho người sinh Thìn?", false, luuNien.isTamTai);
+    log(`<p class="info">Tam Tai cho Thân Tí Thìn = Dần-Mão-Thìn → 2026 (Ngọ) không phải Tam Tai ✓</p>`);
+
+    // ============================================================
+    // 7. TỬ VÂN — Sao chủ Cục, Lai Nhân, Nguyên Thần
+    // ============================================================
+    log(`<h2>7. Tử Vân — Sao chủ Cục + Lai Nhân + Nguyên Thần</h2>`);
+
+    const saoChuCuc = anSaoChuCuc(cuc, viTriSao);
+    check("Sao chủ Cục Mộc Tam = Tham Lang", "Tham Lang", saoChuCuc.sao);
+    log(`<p class="info">Sao chủ Cục Tham Lang đóng <code>${chiName(saoChuCuc.chiIdx)}</code> = Tử Tức Ngọ (cùng Hoá Lộc — Tử Tức siêu mạnh).</p>`);
+
+    const laiNhanDefault = getLaiNhanCung();
+    check("Lai Nhân default = Mệnh", "Mệnh", laiNhanDefault.tenCung);
+    check("Lai Nhân isManual=false", false, laiNhanDefault.isManual);
+
+    const laiNhanManual = getLaiNhanCung("Điền Trạch");
+    check("Lai Nhân manual = Điền Trạch", "Điền Trạch", laiNhanManual.tenCung);
+
+    const nguyenThan = anNguyenThan(chiNam, cungMenhChi, viTriSao);
+    // Mệnh chủ Thìn = Liêm Trinh. Liêm Trinh ở Thìn (theo CS-013 doc).
+    log(`<p class="info">Mệnh chủ Liêm Trinh đóng <code>${chiName(nguyenThan.cungThu2.chiIdx)}</code></p>`);
+    check("Nguyên Thần cung 1 = Mệnh Dậu", 9, nguyenThan.cungMenh.chiIdx);
+    check("Nguyên Thần cung 2 = nơi Liêm Trinh đóng", viTriSao["Liêm Trinh"], nguyenThan.cungThu2.chiIdx);
+    check("Nguyên Thần experimental=true", true, nguyenThan.experimental);
+
+    // Tổng hợp
+    const tuVan = anTuVanFull({
+      cuc, chiNam, cungMenhChi, viTriSao,
+      laiNhanCung: null,   // default
+    });
+    check("Huyền Khí = null (skip MVP)", null, tuVan.huyenKhi);
+
+    // ============================================================
+    // SUMMARY
+    // ============================================================
+    const total = passCount + failCount;
+    const allPass = failCount === 0;
+    log(`<div class="summary ${allPass ? '' : 'fail-summary'}">
+      <strong>Kết quả M3 verify:</strong> ${passCount}/${total} PASS
+      ${failCount > 0 ? `<br><strong class="fail">${failCount} FAIL</strong>` : ''}
+      ${allPass ? '<br>🎉 <strong>M3 ALL PASS</strong> — sẵn sàng M4 (UI + render).' : ''}
+    </div>`);
+  </script>
+</body>
+</html>

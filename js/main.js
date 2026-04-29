@@ -1,0 +1,315 @@
+// main.js — Entry point: bind events, gọi engine, render chart, save/load.
+
+import { buildChart } from './engine.js';
+import { renderChart, renderMeta, renderCungDetail } from './render.js';
+import { exportPNG, exportJSON, exportMarkdown, defaultFilename } from './save.js';
+import { saveChart, listCharts, loadChart, deleteChart, renameChart } from './storage.js';
+
+// ============================================================
+// State
+// ============================================================
+const state = {
+  currentChart: null,
+  settings: {
+    showVong: true,
+    showLuu: true,
+    showTuVan: false,
+  },
+};
+
+// ============================================================
+// DOM refs
+// ============================================================
+const $ = (sel) => document.querySelector(sel);
+
+const form = $("#form-input");
+const chartContainer = $("#chart-container");
+const chartMeta = $("#chart-meta");
+const metaList = $("#meta-list");
+
+const btnSaveChart = $("#btn-save-chart");
+const btnPrint = $("#btn-print");
+const btnExportPng = $("#btn-export-png");
+const btnExportJson = $("#btn-export-json");
+const btnExportMd = $("#btn-export-md");
+
+const btnSaved = $("#btn-saved");
+const btnSettings = $("#btn-settings");
+
+const modalCung = $("#modal-cung");
+const modalCungBody = $("#modal-cung-body");
+const modalCungClose = $("#modal-cung-close");
+
+const modalSaved = $("#modal-saved");
+const modalSavedClose = $("#modal-saved-close");
+const savedList = $("#saved-list");
+
+const modalSettings = $("#modal-settings");
+const modalSettingsClose = $("#modal-settings-close");
+const stShowExp = $("#st-show-experimental");
+const stShowVong = $("#st-show-vong");
+const stShowLuu = $("#st-show-luu");
+
+// Default năm xem
+$("#in-year-view").value = new Date().getFullYear();
+
+// ============================================================
+// Form submit → build + render
+// ============================================================
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  buildAndRender();
+});
+
+function readForm() {
+  const gioiTinh = form.gender.value;
+  const foreignSchoolEl = document.querySelector('input[name="foreignSchool"]:checked');
+  return {
+    nam: parseInt($("#in-year").value, 10),
+    thang: parseInt($("#in-month").value, 10),
+    ngay: parseInt($("#in-day").value, 10),
+    gio: parseInt($("#in-hour").value, 10),
+    phut: parseInt($("#in-minute").value || "0", 10),
+    gioiTinh,
+    tenLabel: $("#in-name").value.trim() || null,
+    namXem: parseInt($("#in-year-view").value || new Date().getFullYear(), 10),
+    laiNhanCung: $("#in-lai-nhan").value || null,
+    timeZone: parseFloat($("#in-timezone").value || "7"),
+    foreignSchool: foreignSchoolEl?.value || "vn",
+  };
+}
+
+function buildAndRender() {
+  try {
+    const input = readForm();
+    const chart = buildChart(input);
+    state.currentChart = chart;
+    renderCurrent();
+
+    chartMeta.classList.remove("hidden");
+    renderMeta(metaList, chart);
+
+    btnSaveChart.disabled = false;
+    btnPrint.disabled = false;
+    btnExportPng.disabled = false;
+    btnExportJson.disabled = false;
+    btnExportMd.disabled = false;
+  } catch (err) {
+    console.error(err);
+    chartContainer.innerHTML = `<div class="chart-empty"><p style="color:#c0392b"><strong>Lỗi:</strong> ${err.message}</p>
+      <p class="hint">Kiểm tra lại input. App hỗ trợ ngày dương 1900-2100, mọi giờ.</p></div>`;
+  }
+}
+
+function renderCurrent() {
+  if (!state.currentChart) return;
+  renderChart(chartContainer, state.currentChart, {
+    showVong: state.settings.showVong,
+    showLuu: state.settings.showLuu,
+    showTuVan: state.settings.showTuVan,
+    onCungClick: openCungModal,
+  });
+}
+
+// ============================================================
+// Quick load buttons
+// ============================================================
+$("#btn-load-cs013").addEventListener("click", () => {
+  fillForm({ name: "CS-013", year: 1988, month: 4, day: 11, hour: 11, minute: 25, gender: "nu" });
+});
+$("#btn-load-cs015").addEventListener("click", () => {
+  fillForm({ name: "CS-015", year: 1994, month: 11, day: 19, hour: 2, minute: 0, gender: "nam" });
+});
+$("#btn-load-cs016").addEventListener("click", () => {
+  fillForm({ name: "CS-016", year: 2000, month: 3, day: 10, hour: 19, minute: 45, gender: "nu" });
+});
+
+function fillForm({ name, year, month, day, hour, minute, gender }) {
+  $("#in-name").value = name || "";
+  $("#in-year").value = year;
+  $("#in-month").value = month;
+  $("#in-day").value = day;
+  $("#in-hour").value = hour;
+  $("#in-minute").value = minute;
+  form.gender.value = gender;
+  buildAndRender();
+}
+
+// ============================================================
+// Cung modal
+// ============================================================
+function openCungModal(cung, chart) {
+  renderCungDetail(modalCungBody, cung, chart);
+  modalCung.classList.remove("hidden");
+}
+modalCungClose.addEventListener("click", () => modalCung.classList.add("hidden"));
+modalCung.addEventListener("click", (e) => {
+  if (e.target === modalCung) modalCung.classList.add("hidden");
+});
+
+// ============================================================
+// Save / Export
+// ============================================================
+btnSaveChart.addEventListener("click", async () => {
+  if (!state.currentChart) return;
+  try {
+    const id = await saveChart(state.currentChart);
+    btnSaveChart.textContent = "✓ Đã lưu";
+    setTimeout(() => { btnSaveChart.innerHTML = "💾 Lưu"; }, 1500);
+  } catch (err) {
+    alert("Lưu thất bại: " + err.message);
+  }
+});
+
+btnPrint.addEventListener("click", () => {
+  if (!state.currentChart) return;
+  window.print();
+});
+
+btnExportPng.addEventListener("click", async () => {
+  if (!state.currentChart) return;
+  btnExportPng.disabled = true;
+  btnExportPng.textContent = "⏳ Đang export…";
+  try {
+    // Capture chỉ .a4-page (không phải toàn chartContainer) để PNG đúng A4
+    const a4 = chartContainer.querySelector(".a4-page");
+    await exportPNG(a4 || chartContainer, defaultFilename(state.currentChart, "png"));
+  } catch (err) {
+    alert("Export PNG thất bại: " + err.message);
+  }
+  btnExportPng.disabled = false;
+  btnExportPng.innerHTML = "🖼 PNG";
+});
+
+btnExportJson.addEventListener("click", () => {
+  if (!state.currentChart) return;
+  exportJSON(state.currentChart, defaultFilename(state.currentChart, "json"));
+});
+
+btnExportMd.addEventListener("click", () => {
+  if (!state.currentChart) return;
+  exportMarkdown(state.currentChart, defaultFilename(state.currentChart, "md"));
+});
+
+// ============================================================
+// Saved charts modal
+// ============================================================
+btnSaved.addEventListener("click", async () => {
+  await refreshSavedList();
+  modalSaved.classList.remove("hidden");
+});
+modalSavedClose.addEventListener("click", () => modalSaved.classList.add("hidden"));
+modalSaved.addEventListener("click", (e) => {
+  if (e.target === modalSaved) modalSaved.classList.add("hidden");
+});
+
+async function refreshSavedList() {
+  const charts = await listCharts();
+  if (charts.length === 0) {
+    savedList.innerHTML = `<div class="saved-empty">Chưa có lá số nào được lưu.</div>`;
+    return;
+  }
+  savedList.innerHTML = "";
+  for (const rec of charts) {
+    const i = rec.input;
+    const item = document.createElement("div");
+    item.className = "saved-item";
+    item.innerHTML = `
+      <div>
+        <strong>${escape(rec.label)}</strong>
+        <div class="saved-item-meta">
+          ${i.gioiTinh === "nam" ? "Nam" : "Nữ"} · ${i.nam}/${i.thang}/${i.ngay} ${i.gio}h${i.phut} ·
+          lưu ${new Date(rec.savedAt).toLocaleString("vi-VN")}
+        </div>
+      </div>
+      <div class="saved-actions">
+        <button class="btn btn-ghost" data-act="load" data-id="${rec.id}">Mở</button>
+        <button class="btn btn-ghost" data-act="rename" data-id="${rec.id}">Đổi tên</button>
+        <button class="btn btn-ghost" data-act="delete" data-id="${rec.id}">Xoá</button>
+      </div>
+    `;
+    savedList.appendChild(item);
+  }
+  savedList.querySelectorAll("button[data-act]").forEach(btn => {
+    btn.addEventListener("click", () => onSavedAction(btn.dataset.act, parseInt(btn.dataset.id, 10)));
+  });
+}
+
+async function onSavedAction(act, id) {
+  if (act === "load") {
+    const rec = await loadChart(id);
+    if (!rec) return alert("Không load được");
+    state.currentChart = rec.chart;
+    // Sync form
+    const i = rec.chart.input;
+    fillFormFromInput(i, rec.label);
+    renderCurrent();
+    chartMeta.classList.remove("hidden");
+    renderMeta(metaList, rec.chart);
+    btnSaveChart.disabled = false;
+    btnPrint.disabled = false;
+    btnExportPng.disabled = false;
+    btnExportJson.disabled = false;
+    btnExportMd.disabled = false;
+    modalSaved.classList.add("hidden");
+  } else if (act === "rename") {
+    const newName = prompt("Tên mới:");
+    if (newName) {
+      await renameChart(id, newName);
+      await refreshSavedList();
+    }
+  } else if (act === "delete") {
+    if (confirm("Xoá lá số này?")) {
+      await deleteChart(id);
+      await refreshSavedList();
+    }
+  }
+}
+
+function fillFormFromInput(i, label) {
+  $("#in-name").value = label || "";
+  $("#in-year").value = i.nam;
+  $("#in-month").value = i.thang;
+  $("#in-day").value = i.ngay;
+  $("#in-hour").value = i.gio;
+  $("#in-minute").value = i.phut;
+  form.gender.value = i.gioiTinh;
+  $("#in-year-view").value = i.namXem;
+  $("#in-lai-nhan").value = i.laiNhanCung || "";
+  if (i.timeZone !== undefined) $("#in-timezone").value = String(i.timeZone);
+  if (i.foreignSchool) {
+    const radio = document.querySelector(`input[name="foreignSchool"][value="${i.foreignSchool}"]`);
+    if (radio) radio.checked = true;
+  }
+}
+
+// ============================================================
+// Settings modal
+// ============================================================
+btnSettings.addEventListener("click", () => modalSettings.classList.remove("hidden"));
+modalSettingsClose.addEventListener("click", () => modalSettings.classList.add("hidden"));
+modalSettings.addEventListener("click", (e) => {
+  if (e.target === modalSettings) modalSettings.classList.add("hidden");
+});
+
+stShowExp.addEventListener("change", () => {
+  state.settings.showTuVan = stShowExp.checked;
+  renderCurrent();
+});
+stShowVong.addEventListener("change", () => {
+  state.settings.showVong = stShowVong.checked;
+  renderCurrent();
+});
+stShowLuu.addEventListener("change", () => {
+  state.settings.showLuu = stShowLuu.checked;
+  renderCurrent();
+});
+
+// ============================================================
+// Helpers
+// ============================================================
+function escape(s) {
+  return String(s).replace(/[&<>"']/g, m => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[m]));
+}

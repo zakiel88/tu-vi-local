@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Verify M1 — Tu Vi Local</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 24px; max-width: 900px; line-height: 1.6; }
+    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; }
+    h2 { color: #2c3e50; margin-top: 32px; }
+    pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 13px; }
+    .pass { color: #27ae60; font-weight: bold; }
+    .fail { color: #c0392b; font-weight: bold; }
+    .info { color: #2980b9; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    .summary { background: #e8f5e9; padding: 16px; border-radius: 4px; margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <h1>🔬 Verify M1 — Engine cơ bản (Tu Vi Local)</h1>
+  <p class="info">Test 4 case studies: CS-001, CS-013, CS-015, CS-016</p>
+
+  <div id="output"></div>
+
+  <script type="module">
+    import { duongToAm, tinhChiGio, tinhCanChiGio, tinhCanChiThang, tinhAmDuongType, isDaiHanThuan } from '../js/lunar.js';
+    import { anCungMenh, anCungThan, an12Cung, anCanCung, tinhThanCu } from '../js/cung.js';
+    import { anCuc, getCucInfo, getSaoChuCuc, getMenhChu, getThanChu } from '../js/menh_than_cuc.js';
+    import { CHI } from '../js/data.js';
+
+    const out = document.getElementById('output');
+    let passCount = 0, failCount = 0;
+
+    function log(html) { out.insertAdjacentHTML('beforeend', html); }
+    function check(label, expected, actual) {
+      const pass = expected === actual;
+      if (pass) passCount++; else failCount++;
+      const cls = pass ? 'pass' : 'fail';
+      const sym = pass ? '✓' : '✗';
+      log(`<div class="${cls}">${sym} ${label}: <code>expected=${expected}, actual=${actual}</code></div>`);
+    }
+
+    function runCase(testName, input, expected) {
+      log(`<h2>${testName}</h2>`);
+      try {
+        // Lịch pháp
+        const lich = duongToAm(input);
+        check("Năm âm", expected.amNam, lich.am.nam);
+        check("Tháng âm", expected.amThang, lich.am.thang);
+        check("Ngày âm", expected.amNgay, lich.am.ngay);
+        check("Can-Chi năm", expected.canChiNam, `${lich.canChi.nam.can} ${lich.canChi.nam.chi}`);
+        check("Can-Chi tháng", expected.canChiThang, `${lich.canChi.thang.can} ${lich.canChi.thang.chi}`);
+        check("Can-Chi ngày", expected.canChiNgay, `${lich.canChi.ngay.can} ${lich.canChi.ngay.chi}`);
+        check("Nạp Âm", expected.napAm, lich.napAm);
+
+        // Giờ
+        const chiGio = tinhChiGio(input.gio, input.phut);
+        check("Chi giờ", expected.chiGio, chiGio);
+        const canChiGio = tinhCanChiGio(lich.canChi.ngay.can, chiGio);
+        check("Can-Chi giờ", expected.canChiGio, `${canChiGio.can} ${canChiGio.chi}`);
+
+        // Âm Dương
+        const amDuongType = tinhAmDuongType(lich.canChi.nam.can, input.gioiTinh);
+        check("Âm Dương type", expected.amDuongType, amDuongType);
+        const isThuan = isDaiHanThuan(lich.canChi.nam.can, input.gioiTinh);
+        check("Đại hạn thuận?", expected.isThuan, isThuan);
+
+        // 12 cung
+        const cungMenhChi = anCungMenh(lich.am.thang, chiGio);
+        check("Cung Mệnh chi", expected.menhChi, CHI[cungMenhChi]);
+        const cungThanChi = anCungThan(lich.am.thang, chiGio);
+        check("Cung Thân chi", expected.thanChi, CHI[cungThanChi]);
+        const thanCu = tinhThanCu(cungMenhChi, cungThanChi);
+        check("Thân cư", expected.thanCu, thanCu);
+
+        // Cục
+        const cuc = anCuc(lich.canChi.nam.can, CHI[cungMenhChi]);
+        check("Cục", expected.cuc, cuc);
+        const cucInfo = getCucInfo(cuc);
+        check("Cục số", expected.cucSo, cucInfo.so);
+        check("ĐH1 tuổi", expected.dh1, cucInfo.dh1);
+
+        // Mệnh chủ + Thân chủ
+        const menhChu = getMenhChu(lich.canChi.nam.chi);
+        check("Mệnh chủ", expected.menhChu, menhChu);
+        const thanChuVN = getThanChu(lich.canChi.nam.chi, "vn");
+        check("Thân chủ (VN)", expected.thanChuVN, thanChuVN);
+
+        // Sao chủ Cục (Tử Vân)
+        const saoChuCuc = getSaoChuCuc(cuc);
+        check("Sao chủ Cục", expected.saoChuCuc, saoChuCuc);
+
+        // 12 cung table
+        const cung12 = an12Cung(cungMenhChi);
+        const canCung = anCanCung(lich.canChi.nam.can);
+        let tableHtml = '<table><tr><th>#</th><th>Tên cung</th><th>Chi</th><th>Can cung</th></tr>';
+        for (const c of cung12) {
+          tableHtml += `<tr><td>${c.chiIdx}</td><td>${c.tenCung}</td><td>${c.chi}</td><td>${canCung[c.chiIdx]}</td></tr>`;
+        }
+        tableHtml += '</table>';
+        log(tableHtml);
+
+      } catch (e) {
+        log(`<div class="fail">✗ ERROR: ${e.message}</div>`);
+        failCount++;
+      }
+    }
+
+    // ============================================================
+    // CS-013: Nữ Mậu Thìn 1988, sinh 11/4/1988, giờ Ngọ (11:25)
+    // ============================================================
+    runCase("CS-013 — Nữ Mậu Thìn 1988 (giờ Ngọ)", {
+      nam: 1988, thang: 4, ngay: 11, gio: 11, phut: 25,
+      gioiTinh: "nu",
+    }, {
+      amNam: 1988, amThang: 2, amNgay: 25,
+      canChiNam: "Mậu Thìn", canChiThang: "Ất Mão", canChiNgay: "Bính Thân",
+      napAm: "Đại Lâm Mộc",
+      chiGio: "Ngọ",
+      canChiGio: "Giáp Ngọ",
+      amDuongType: "duong_nu",
+      isThuan: false,  // Dương Nữ → nghịch
+      menhChi: "Dậu",
+      thanChi: "Dậu",  // giờ Ngọ + Mệnh Dậu → Thân cũng Dậu (Thân cư Mệnh)
+      thanCu: "Mệnh",
+      cuc: "Mộc Tam",
+      cucSo: 3,
+      dh1: 3,
+      menhChu: "Liêm Trinh",   // Chi Thìn
+      thanChuVN: "Văn Xương",  // Chi Thìn VN
+      saoChuCuc: "Tham Lang",  // Mộc Tam
+    });
+
+    // ============================================================
+    // CS-001: Nam Mậu Thìn 1988, sinh 11/4/1988, giờ Sửu (1:30)
+    // ============================================================
+    runCase("CS-001 — Nam Mậu Thìn 1988 (giờ Sửu)", {
+      nam: 1988, thang: 4, ngay: 11, gio: 1, phut: 30,
+      gioiTinh: "nam",
+    }, {
+      amNam: 1988, amThang: 2, amNgay: 25,
+      canChiNam: "Mậu Thìn", canChiThang: "Ất Mão", canChiNgay: "Bính Thân",
+      napAm: "Đại Lâm Mộc",
+      chiGio: "Sửu",
+      canChiGio: "Kỷ Sửu",  // Bính ngày → Mậu Tí khởi → Sửu = Kỷ Sửu
+      amDuongType: "duong_nam",
+      isThuan: true,
+      menhChi: "Dần",  // (Mão chi 3 - Sửu chi 1 + 12) % 12 = 2 = Dần
+      thanChi: "Thìn", // (3 + 1) = 4 = Thìn
+      thanCu: "Phúc Đức",  // khoảng cách 2 → Phúc Đức
+      cuc: "Hoả Lục",  // Mậu Quý + Dần Mão → Hoả Lục
+      cucSo: 6,
+      dh1: 6,
+      menhChu: "Liêm Trinh",
+      thanChuVN: "Văn Xương",
+      saoChuCuc: "Phá Quân",  // Hoả Lục
+    });
+
+    // ============================================================
+    // CS-015: Nam Giáp Tuất 1994, sinh 19/11/1994, giờ Sửu (2:00)
+    // ============================================================
+    runCase("CS-015 — Nam Giáp Tuất 1994 (giờ Sửu)", {
+      nam: 1994, thang: 11, ngay: 19, gio: 2, phut: 0,
+      gioiTinh: "nam",
+    }, {
+      amNam: 1994, amThang: 10, amNgay: 17,
+      canChiNam: "Giáp Tuất", canChiThang: "Ất Hợi", canChiNgay: "Kỷ Dậu",
+      napAm: "Sơn Đầu Hoả",
+      chiGio: "Sửu",
+      canChiGio: "Ất Sửu",  // Kỷ ngày → Giáp Tí khởi → Sửu = Ất Sửu
+      amDuongType: "duong_nam",
+      isThuan: true,
+      menhChi: "Tuất",   // cung tháng 10 = (Dần + 9) % 12 = 11 = Hợi; (11 - Sửu_1 + 12) % 12 = 10 = Tuất
+      thanChi: "Tí",     // (11 + 1) = 12 = 0 = Tí
+      thanCu: "Phúc Đức",
+      cuc: "Hoả Lục",  // Giáp Kỷ + Tuất Hợi → Hoả Lục
+      cucSo: 6,
+      dh1: 6,
+      menhChu: "Lộc Tồn",   // Chi Tuất
+      thanChuVN: "Hoả Tinh", // Chi Tuất VN (đảo TQ Văn Xương)
+      saoChuCuc: "Phá Quân",
+    });
+
+    // ============================================================
+    // CS-016: Nữ Canh Thìn 2000, sinh 10/3/2000, giờ Tuất (19:45)
+    // ============================================================
+    runCase("CS-016 — Nữ Canh Thìn 2000 (giờ Tuất)", {
+      nam: 2000, thang: 3, ngay: 10, gio: 19, phut: 45,
+      gioiTinh: "nu",
+    }, {
+      amNam: 2000, amThang: 2, amNgay: 5,
+      canChiNam: "Canh Thìn", canChiThang: "Kỷ Mão", canChiNgay: "Đinh Mão",
+      napAm: "Bạch Lạp Kim",
+      chiGio: "Tuất",
+      canChiGio: "Canh Tuất",  // Đinh ngày → Canh Tí → Tuất = Canh Tuất
+      amDuongType: "duong_nu",
+      isThuan: false,  // Dương Nữ → nghịch
+      menhChi: "Tỵ",   // cung tháng 2 = Mão (chi 3); (3 - Tuất_10 + 12) % 12 = 5 = Tỵ
+      thanChi: "Sửu",  // (3 + 10) % 12 = 13 % 12 = 1 = Sửu
+      thanCu: "Tài Bạch",  // khoảng cách 8
+      cuc: "Kim Tứ",   // Ất Canh + Thìn Tỵ → Kim Tứ
+      cucSo: 4,
+      dh1: 4,
+      menhChu: "Liêm Trinh",   // Chi Thìn
+      thanChuVN: "Văn Xương",  // Chi Thìn VN
+      saoChuCuc: "Vũ Khúc",
+    });
+
+    // Summary
+    log(`<div class="summary"><strong>Tổng kết:</strong> ${passCount} pass / ${failCount} fail (tổng ${passCount + failCount} checks)</div>`);
+  </script>
+</body>
+</html>

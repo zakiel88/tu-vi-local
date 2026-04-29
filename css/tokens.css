@@ -1,0 +1,106 @@
+/* tokens.css — Design tokens cho Tử Vi Local
+ * Note: dùng HEX/RGB thay vì OKLCH để tương thích html2canvas (PNG export).
+ * Direction: Editorial scholarly — cream background, deep navy headers,
+ * traditional red accents (Mệnh + cát), warm gold cho ĐH hiện tại.
+ */
+
+:root {
+  /* === Color palette === */
+  --color-bg:           #f9f6ee;     /* cream papyrus */
+  --color-bg-panel:     #fdfbf7;
+  --color-bg-cell:      #fbf8f1;
+  --color-bg-elevated:  #ffffff;
+
+  --color-ink:          #2c2f36;     /* near-black ink */
+  --color-ink-soft:     #5a5e66;
+  --color-ink-mute:     #888c92;
+
+  --color-line:         #d6d2c7;
+  --color-line-soft:    #e5e1d8;
+
+  /* Accents */
+  --color-accent-red:   #b03020;     /* traditional red */
+  --color-accent-red-soft: #d68a78;
+  --color-accent-gold:  #c9a352;
+  --color-accent-navy:  #303a52;
+  --color-accent-jade:  #339a7a;
+  --color-accent-purple: #6c4e9a;
+
+  /* Star semantic */
+  --color-chinh:        #2f3744;     /* chính tinh = bold ink */
+  --color-cat:          #2a8a6a;     /* lục cát = jade */
+  --color-sat:          #b03020;     /* lục sát = red */
+  --color-hoa-loc:      #2a9c4a;     /* Hoá Lộc green */
+  --color-hoa-quyen:    #c97816;     /* Hoá Quyền orange */
+  --color-hoa-khoa:     #2a78b8;     /* Hoá Khoa blue */
+  --color-hoa-ky:       #b8281c;     /* Hoá Kỵ red */
+  --color-le:           #6e7280;     /* sao lẻ neutral */
+  --color-luu:          #6c4e9a;     /* sao lưu purple */
+
+  --color-mieu:         #1f8c52;     /* M green */
+  --color-vuong:        #228db8;     /* V blue */
+  --color-dac:          #4a6ba0;     /* Đ neutral blue */
+  --color-binh:         #7a7e88;     /* B grey */
+  --color-ham:          #b82218;     /* H red */
+
+  /* Cung highlights */
+  --color-menh-border:  #b03020;     /* Mệnh = red border */
+  --color-than-bg:      #f4ead0;     /* Thân = warm tint */
+  --color-dh-current:   #c9a352;     /* ĐH hiện tại = gold */
+
+  /* Tuần Triệt */
+  --color-tuan:         #543588;     /* Tuần purple */
+  --color-triet:        #983324;     /* Triệt red */
+
+  /* Hành tag colors */
+  --color-hanh-kim:     #806e54;
+  --color-hanh-moc:     #2a8a4e;
+  --color-hanh-thuy:    #2a6896;
+  --color-hanh-hoa:     #b8331e;
+  --color-hanh-tho:     #826230;
+
+  /* === Typography === */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+               "Helvetica Neue", "Inter", system-ui, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Georgia,
+                "Songti SC", "STSong", "Source Han Serif", serif;
+
+  --text-xs:   0.7rem;
+  --text-sm:   0.82rem;
+  --text-base: 0.95rem;
+  --text-md:   1.05rem;
+  --text-lg:   1.25rem;
+  --text-xl:   1.6rem;
+  --text-hero: clamp(1.6rem, 1.2rem + 1.2vw, 2.2rem);
+
+  /* === Spacing === */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  /* === Radius === */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+
+  /* === Motion === */
+  --d-fast:   120ms;
+  --d-normal: 220ms;
+  --ease:     cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* === Shadow === */
+  --sh-1: 0 1px 2px rgba(40, 45, 55, 0.06), 0 1px 1px rgba(40, 45, 55, 0.04);
+  --sh-2: 0 4px 12px rgba(40, 45, 55, 0.08), 0 1px 3px rgba(40, 45, 55, 0.06);
+  --sh-3: 0 8px 32px rgba(40, 45, 55, 0.12), 0 4px 8px rgba(40, 45, 55, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

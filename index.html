@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tử Vi Local — Lập lá số tại nhà</title>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/ui.css" />
+  <link rel="stylesheet" href="css/chart.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">紫微</span>
+      <span class="brand-name">Tử Vi Local</span>
+      <span class="brand-tag">Lập lá số · Lưu offline · Phái VN</span>
+    </div>
+    <div class="header-actions">
+      <button id="btn-saved" class="btn btn-ghost" title="Danh sách lá số đã lưu">📂 Đã lưu</button>
+      <button id="btn-settings" class="btn btn-ghost" title="Tuỳ chọn">⚙ Cài đặt</button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- Form input -->
+    <aside class="panel panel-input">
+      <h2 class="panel-title">Thông tin sinh</h2>
+      <form id="form-input" class="form-grid">
+        <label class="field">
+          <span>Họ tên / nhãn</span>
+          <input type="text" id="in-name" placeholder="VD: CS-013" maxlength="80" />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Năm dương</span>
+            <input type="number" id="in-year" min="1900" max="2100" required />
+          </label>
+          <label class="field">
+            <span>Tháng</span>
+            <input type="number" id="in-month" min="1" max="12" required />
+          </label>
+          <label class="field">
+            <span>Ngày</span>
+            <input type="number" id="in-day" min="1" max="31" required />
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Giờ (0-23)</span>
+            <input type="number" id="in-hour" min="0" max="23" required />
+          </label>
+          <label class="field">
+            <span>Phút</span>
+            <input type="number" id="in-minute" min="0" max="59" value="0" />
+          </label>
+        </div>
+
+        <fieldset class="field-radio">
+          <legend>Giới tính</legend>
+          <label><input type="radio" name="gender" value="nam" required /> Nam</label>
+          <label><input type="radio" name="gender" value="nu" required /> Nữ</label>
+        </fieldset>
+
+        <label class="field">
+          <span>Múi giờ nơi sinh</span>
+          <select id="in-timezone">
+            <option value="7" selected>Việt Nam (UTC+7)</option>
+            <option value="8">TQ / HK / Đài Loan / Singapore (+8)</option>
+            <option value="9">Nhật / Hàn (+9)</option>
+            <option value="10">Úc Đông (Sydney) (+10)</option>
+            <option value="5.5">Ấn Độ (+5:30)</option>
+            <option value="3">Trung Đông (+3)</option>
+            <option value="1">Châu Âu Tây (Paris/Berlin) (+1)</option>
+            <option value="2">Châu Âu Đông (+2)</option>
+            <option value="0">Anh / GMT (0)</option>
+            <option value="-5">US Đông (NY/Boston) (-5)</option>
+            <option value="-6">US Trung (Chicago) (-6)</option>
+            <option value="-7">US Mountain (-7)</option>
+            <option value="-8">US Tây (LA/SF) (-8)</option>
+            <option value="-10">Honolulu (-10)</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Năm xem lưu niên</span>
+          <input type="number" id="in-year-view" min="1900" max="2100" />
+        </label>
+
+        <label class="field">
+          <span>Lai Nhân (Tử Vân — optional)</span>
+          <select id="in-lai-nhan">
+            <option value="">— Default (Mệnh) —</option>
+            <option>Mệnh</option><option>Phụ Mẫu</option><option>Phúc Đức</option><option>Điền Trạch</option>
+            <option>Quan Lộc</option><option>Nô Bộc</option><option>Thiên Di</option><option>Tật Ách</option>
+            <option>Tài Bạch</option><option>Tử Tức</option><option>Phu Thê</option><option>Huynh Đệ</option>
+          </select>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">📜 Lập lá số</button>
+          <button type="button" id="btn-load-cs013" class="btn btn-ghost" title="Nhanh: load CS-013">CS-013</button>
+          <button type="button" id="btn-load-cs015" class="btn btn-ghost" title="CS-015">CS-015</button>
+          <button type="button" id="btn-load-cs016" class="btn btn-ghost" title="CS-016">CS-016</button>
+        </div>
+      </form>
+
+      <div id="chart-meta" class="chart-meta hidden">
+        <h3 class="meta-title">Thông tin lá số</h3>
+        <dl id="meta-list"></dl>
+      </div>
+    </aside>
+
+    <!-- Chart -->
+    <section class="panel panel-chart">
+      <div class="chart-toolbar">
+        <h2 class="panel-title">Lá số</h2>
+        <div class="toolbar-actions">
+          <button id="btn-save-chart" class="btn btn-ghost" disabled>💾 Lưu</button>
+          <button id="btn-print" class="btn btn-ghost" disabled>🖨 In A4</button>
+          <button id="btn-export-png" class="btn btn-ghost" disabled>🖼 PNG</button>
+          <button id="btn-export-json" class="btn btn-ghost" disabled>📄 JSON</button>
+          <button id="btn-export-md" class="btn btn-ghost" disabled>📝 MD</button>
+        </div>
+      </div>
+
+      <div id="chart-container" class="chart-container">
+        <div class="chart-empty">
+          <p>Nhập thông tin sinh và bấm <strong>Lập lá số</strong> để bắt đầu.</p>
+          <p class="hint">App chạy hoàn toàn offline — không gửi data ra ngoài.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Cung detail -->
+  <div id="modal-cung" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <button class="modal-close" id="modal-cung-close">×</button>
+      <div id="modal-cung-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Saved charts list -->
+  <div id="modal-saved" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content modal-wide">
+      <button class="modal-close" id="modal-saved-close">×</button>
+      <h2>Lá số đã lưu</h2>
+      <div id="saved-list"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div id="modal-settings" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <button class="modal-close" id="modal-settings-close">×</button>
+      <h2>Cài đặt</h2>
+      <div class="settings-grid">
+        <fieldset class="field-radio" style="grid-column:1/-1">
+          <legend>Sinh nước ngoài — phái xử lý múi giờ</legend>
+          <label><input type="radio" name="foreignSchool" value="vn" checked /> Convert giờ về VN (phái VN — mặc định)</label>
+          <br />
+          <label><input type="radio" name="foreignSchool" value="local" /> Giữ giờ địa phương (phái Tử Vân Đài Loan)</label>
+          <p style="font-size:11px;color:var(--color-ink-mute);margin:4px 0 0">
+            Xem chi tiết tại <code>vault/02-Quy Tắc/Trường Hợp Đặc Biệt/Sinh Ngoại Quốc.md</code>
+          </p>
+        </fieldset>
+        <label class="field-row-inline">
+          <input type="checkbox" id="st-show-experimental" />
+          <span>Hiển thị Tử Vân (Sao chủ Cục, Lai Nhân, Nguyên Thần) — experimental</span>
+        </label>
+        <label class="field-row-inline">
+          <input type="checkbox" id="st-show-vong" checked />
+          <span>Hiển thị 3 vòng phụ trợ (Thái Tuế, Bác Sĩ, Trường Sinh)</span>
+        </label>
+        <label class="field-row-inline">
+          <input type="checkbox" id="st-show-luu" checked />
+          <span>Hiển thị sao lưu năm xem</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
