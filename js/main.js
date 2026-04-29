@@ -6,6 +6,20 @@ import { exportPNG, exportJSON, exportMarkdown, defaultFilename } from './save.j
 import { saveChart, listCharts, loadChart, deleteChart, renameChart } from './storage.js';
 
 // ============================================================
+// Config — API URL auto-detect
+// ============================================================
+const API_URL = (() => {
+  if (typeof window !== "undefined" && window.TUVI_API_URL) return window.TUVI_API_URL;
+  if (typeof location !== "undefined") {
+    const h = location.hostname;
+    if (h === "tv.bikbrik.com" || h.endsWith(".bikbrik.com")) {
+      return "https://tuvi-api.bikbrik.com";
+    }
+  }
+  return "http://localhost:3001";
+})();
+
+// ============================================================
 // State
 // ============================================================
 const state = {
@@ -27,11 +41,19 @@ const chartContainer = $("#chart-container");
 const chartMeta = $("#chart-meta");
 const metaList = $("#meta-list");
 
+const btnAnalyze = $("#btn-analyze");
 const btnSaveChart = $("#btn-save-chart");
 const btnPrint = $("#btn-print");
 const btnExportPng = $("#btn-export-png");
 const btnExportJson = $("#btn-export-json");
 const btnExportMd = $("#btn-export-md");
+
+const modalAnalyze = $("#modal-analyze");
+const modalAnalyzeClose = $("#modal-analyze-close");
+const btnAnalyzeGo = $("#btn-analyze-go");
+const btnAnalyzeCancel = $("#btn-analyze-cancel");
+const analyzeLabel = $("#analyze-label");
+const analyzeStatus = $("#analyze-status");
 
 const btnSaved = $("#btn-saved");
 const btnSettings = $("#btn-settings");
@@ -89,6 +111,7 @@ function buildAndRender() {
     chartMeta.classList.remove("hidden");
     renderMeta(metaList, chart);
 
+    btnAnalyze.disabled = false;
     btnSaveChart.disabled = false;
     btnPrint.disabled = false;
     btnExportPng.disabled = false;
@@ -164,6 +187,65 @@ btnSaveChart.addEventListener("click", async () => {
 btnPrint.addEventListener("click", () => {
   if (!state.currentChart) return;
   window.print();
+});
+
+// === ANALYZE → CASE STUDY ===
+btnAnalyze.addEventListener("click", () => {
+  if (!state.currentChart) return;
+  analyzeLabel.value = state.currentChart.input.tenLabel || "";
+  analyzeStatus.classList.add("hidden");
+  analyzeStatus.innerHTML = "";
+  modalAnalyze.classList.remove("hidden");
+});
+modalAnalyzeClose.addEventListener("click", () => modalAnalyze.classList.add("hidden"));
+btnAnalyzeCancel.addEventListener("click", () => modalAnalyze.classList.add("hidden"));
+modalAnalyze.addEventListener("click", (e) => {
+  if (e.target === modalAnalyze) modalAnalyze.classList.add("hidden");
+});
+
+btnAnalyzeGo.addEventListener("click", async () => {
+  if (!state.currentChart) return;
+  const label = analyzeLabel.value.trim() || "ẩn danh";
+
+  btnAnalyzeGo.disabled = true;
+  btnAnalyzeGo.textContent = "⏳ Đang phân tích…";
+  analyzeStatus.classList.remove("hidden");
+  analyzeStatus.innerHTML = `<div style="color:#5a5e66">📡 Gửi chart đến <code>${API_URL}</code>… Claude đang đọc framework + viết case study (1-3 phút)…</div>`;
+
+  try {
+    const resp = await fetch(`${API_URL}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chart: state.currentChart, label }),
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${resp.status}`);
+    }
+
+    analyzeStatus.innerHTML = `
+      <div style="color:#2a8a4e;padding:12px;background:#e6f4ea;border-radius:6px;">
+        ✅ <strong>Đã tạo ${data.csId}</strong><br>
+        File: <code>${data.filename}</code><br>
+        Size: ${Math.round(data.bytes / 1024)} KB<br>
+        Path: <code style="font-size:11px">${data.path}</code><br>
+        <br>
+        Mở file trong Obsidian (Cmd+O → ${data.csId}) để review + chỉnh sửa.
+      </div>
+    `;
+  } catch (err) {
+    analyzeStatus.innerHTML = `
+      <div style="color:#b03020;padding:12px;background:#fdecea;border-radius:6px;">
+        ❌ Lỗi: ${err.message}<br>
+        <small>API URL: <code>${API_URL}</code><br>
+        Kiểm tra: (1) local service có chạy không (<code>node server.js</code>), (2) Cloudflare Tunnel có active không, (3) DevTools console có CORS error?</small>
+      </div>
+    `;
+  } finally {
+    btnAnalyzeGo.disabled = false;
+    btnAnalyzeGo.textContent = "🚀 Bắt đầu phân tích";
+  }
 });
 
 btnExportPng.addEventListener("click", async () => {
@@ -246,6 +328,7 @@ async function onSavedAction(act, id) {
     renderCurrent();
     chartMeta.classList.remove("hidden");
     renderMeta(metaList, rec.chart);
+    btnAnalyze.disabled = false;
     btnSaveChart.disabled = false;
     btnPrint.disabled = false;
     btnExportPng.disabled = false;

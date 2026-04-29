@@ -117,6 +117,7 @@
       <div class="chart-toolbar">
         <h2 class="panel-title">Lá số</h2>
         <div class="toolbar-actions">
+          <button id="btn-analyze" class="btn btn-primary" disabled title="Spawn Claude → viết case study Mệnh 2.0 vào vault">📚 Phân tích → CS</button>
           <button id="btn-save-chart" class="btn btn-ghost" disabled>💾 Lưu</button>
           <button id="btn-print" class="btn btn-ghost" disabled>🖨 In A4</button>
           <button id="btn-export-png" class="btn btn-ghost" disabled>🖼 PNG</button>
@@ -133,6 +134,34 @@
       </div>
     </section>
   </main>
+
+  <!-- Modal: Analyze -->
+  <div id="modal-analyze" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <button class="modal-close" id="modal-analyze-close">×</button>
+      <h2>📚 Phân tích → Case Study</h2>
+      <div id="analyze-body">
+        <p>Service sẽ:</p>
+        <ol style="font-size: 13px; line-height: 1.7;">
+          <li>Spawn Claude với chart JSON + framework Mệnh 2.0</li>
+          <li>Claude đọc vault docs + viết case study đầy đủ</li>
+          <li>Lưu file vào <code>vault/01-Lộ Trình Học/Case Studies/CS-XXX.md</code></li>
+        </ol>
+        <p style="margin-top: 12px; font-size: 13px;">
+          ⏱ Thường mất 1-3 phút (Claude analysis time).
+        </p>
+        <label class="field" style="margin-top: 16px;">
+          <span>Nhãn case (optional, thay tên thật)</span>
+          <input type="text" id="analyze-label" placeholder="vd: ẩn danh, Bạn A, ..." maxlength="60" />
+        </label>
+        <div class="form-actions" style="margin-top: 16px;">
+          <button id="btn-analyze-go" class="btn btn-primary">🚀 Bắt đầu phân tích</button>
+          <button id="btn-analyze-cancel" class="btn btn-ghost">Huỷ</button>
+        </div>
+        <div id="analyze-status" class="hidden" style="margin-top: 16px;"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal: Cung detail -->
   <div id="modal-cung" class="modal hidden" role="dialog" aria-modal="true">
