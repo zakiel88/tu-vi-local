@@ -210,38 +210,71 @@ btnAnalyzeGo.addEventListener("click", async () => {
   btnAnalyzeGo.disabled = true;
   btnAnalyzeGo.textContent = "⏳ Đang phân tích…";
   analyzeStatus.classList.remove("hidden");
-  analyzeStatus.innerHTML = `<div style="color:#5a5e66">📡 Gửi chart đến <code>${API_URL}</code>… Claude đang đọc framework + viết case study (1-3 phút)…</div>`;
+  analyzeStatus.innerHTML = `<div style="color:#5a5e66">📡 Gửi chart đến server…</div>`;
 
   try {
+    // 1. Kick off job
     const resp = await fetch(`${API_URL}/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chart: state.currentChart, label }),
     });
-    const data = await resp.json();
-
-    if (!resp.ok || !data.success) {
-      throw new Error(data.error || `HTTP ${resp.status}`);
+    const kickoff = await resp.json();
+    if (!resp.ok || !kickoff.jobId) {
+      throw new Error(kickoff.error || `HTTP ${resp.status}`);
     }
 
+    const { jobId, csId } = kickoff;
     analyzeStatus.innerHTML = `
-      <div style="color:#2a8a4e;padding:12px;background:#e6f4ea;border-radius:6px;">
-        ✅ <strong>Đã tạo ${data.csId}</strong><br>
-        File: <code>${data.filename}</code><br>
-        Size: ${Math.round(data.bytes / 1024)} KB<br>
-        Path: <code style="font-size:11px">${data.path}</code><br>
-        <br>
-        Mở file trong Obsidian (Cmd+O → ${data.csId}) để review + chỉnh sửa.
-      </div>
-    `;
+      <div style="color:#5a5e66">
+        ⏱ Job <code>${jobId}</code> bắt đầu — sẽ tạo <strong>${csId}</strong>.<br>
+        Claude đang đọc framework + viết case study (~3-8 phút).<br>
+        <span id="poll-progress">Polling status…</span>
+      </div>`;
+
+    // 2. Poll status mỗi 10s
+    const startTime = Date.now();
+    let job = null;
+    while (true) {
+      await new Promise(r => setTimeout(r, 10000));
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      const progressEl = document.getElementById("poll-progress");
+      if (progressEl) progressEl.textContent = `⏱ ${elapsed}s đã trôi qua…`;
+
+      try {
+        const statusResp = await fetch(`${API_URL}/analyze/${jobId}`);
+        job = await statusResp.json();
+        if (job.status === "done" || job.status === "error") break;
+      } catch (e) {
+        // Network glitch — keep polling
+        if (progressEl) progressEl.textContent = `⏱ ${elapsed}s — network glitch, retrying…`;
+      }
+
+      if (Date.now() - startTime > 20 * 60 * 1000) {
+        throw new Error("Polling timeout 20 phút");
+      }
+    }
+
+    // 3. Render result
+    if (job.status === "done") {
+      analyzeStatus.innerHTML = `
+        <div style="color:#2a8a4e;padding:12px;background:#e6f4ea;border-radius:6px;">
+          ✅ <strong>Đã tạo ${job.csId}</strong> trong ${job.elapsedSec}s<br>
+          File: <code>${job.filename}</code><br>
+          Size: ${Math.round(job.bytes / 1024)} KB<br>
+          Path: <code style="font-size:11px">${job.path}</code><br><br>
+          Mở Obsidian (Cmd+O → ${job.csId}) để review + chỉnh sửa.
+        </div>`;
+    } else {
+      throw new Error(job.error || "Unknown error");
+    }
   } catch (err) {
     analyzeStatus.innerHTML = `
       <div style="color:#b03020;padding:12px;background:#fdecea;border-radius:6px;">
         ❌ Lỗi: ${err.message}<br>
         <small>API URL: <code>${API_URL}</code><br>
-        Kiểm tra: (1) local service có chạy không (<code>node server.js</code>), (2) Cloudflare Tunnel có active không, (3) DevTools console có CORS error?</small>
-      </div>
-    `;
+        Check: (1) service running, (2) tunnel active, (3) DevTools console CORS error?</small>
+      </div>`;
   } finally {
     btnAnalyzeGo.disabled = false;
     btnAnalyzeGo.textContent = "🚀 Bắt đầu phân tích";
