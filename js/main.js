@@ -338,6 +338,7 @@ async function refreshSavedList() {
         </div>
       </div>
       <div class="saved-actions">
+        <button class="btn btn-primary" data-act="analyze" data-id="${rec.id}" title="Phân tích → CS">📚 Phân tích</button>
         <button class="btn btn-ghost" data-act="load" data-id="${rec.id}">Mở</button>
         <button class="btn btn-ghost" data-act="rename" data-id="${rec.id}">Đổi tên</button>
         <button class="btn btn-ghost" data-act="delete" data-id="${rec.id}">Xoá</button>
@@ -351,7 +352,7 @@ async function refreshSavedList() {
 }
 
 async function onSavedAction(act, id) {
-  if (act === "load") {
+  if (act === "load" || act === "analyze") {
     const rec = await loadChart(id);
     if (!rec) return alert("Không load được");
     state.currentChart = rec.chart;
@@ -368,6 +369,14 @@ async function onSavedAction(act, id) {
     btnExportJson.disabled = false;
     btnExportMd.disabled = false;
     modalSaved.classList.add("hidden");
+
+    // "analyze" = load + auto-open modal phân tích ngay
+    if (act === "analyze") {
+      analyzeLabel.value = rec.label || rec.chart.input.tenLabel || "";
+      analyzeStatus.classList.add("hidden");
+      analyzeStatus.innerHTML = "";
+      modalAnalyze.classList.remove("hidden");
+    }
   } else if (act === "rename") {
     const newName = prompt("Tên mới:");
     if (newName) {
