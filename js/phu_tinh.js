@@ -95,7 +95,9 @@ export function anSaoLe({ canNam, chiNam, thangAm, ngayAm, chiGio,
     "Tam Thai":    (taPhuChi + ngayAm - 1) % 12,
     "Bát Toạ":     (huuBatChi - ngayAm + 1 + 36) % 12,
     "Ân Quang":    (vanXuongChi + ngayAm - 2 + 144) % 12,
-    "Thiên Quý":   (vanKhucChi + ngayAm - 2 + 144) % 12,
+    // Thiên Quý: khởi Văn Khúc, đếm NGHỊCH theo ngày sinh (Tân Biên 1956 + Tử Vi Chân Cơ).
+    // Asymmetric với Ân Quang: VK = ngày 1, VK-1 = ngày 2, ... → ngày N = VK - (N-1).
+    "Thiên Quý":   (vanKhucChi - ngayAm + 1 + 144) % 12,
     "Long Trì":    (CHI_INDEX["Thìn"] + chiNamIdx) % 12,
     "Phượng Các":  (CHI_INDEX["Tuất"] - chiNamIdx + 144) % 12,
     // Cặp Thai Phụ + Phong Cáo bao quanh Văn Khúc (cách 2 cung mỗi bên)
