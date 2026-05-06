@@ -95,9 +95,10 @@ export function anSaoLe({ canNam, chiNam, thangAm, ngayAm, chiGio,
     "Tam Thai":    (taPhuChi + ngayAm - 1) % 12,
     "Bát Toạ":     (huuBatChi - ngayAm + 1 + 36) % 12,
     "Ân Quang":    (vanXuongChi + ngayAm - 2 + 144) % 12,
-    // Thiên Quý: khởi Văn Khúc, đếm NGHỊCH theo ngày sinh (Tân Biên 1956 + Tử Vi Chân Cơ).
-    // Asymmetric với Ân Quang: VK = ngày 1, VK-1 = ngày 2, ... → ngày N = VK - (N-1).
-    "Thiên Quý":   (vanKhucChi - ngayAm + 1 + 144) % 12,
+    // Thiên Quý: khởi Văn Khúc, đếm NGHỊCH theo ngày sinh, "lùi 1 cung" (đảo chiều thuận).
+    // Formula: VK - (ngày-1) + 1 = VK - ngày + 2 → match tuvichanco.vn (phổ biến VN).
+    // Note: một số software (Tử Vi Chân Cơ) dùng VK - ngày + 1 (không "lùi 1") → vị trí lệch 1 cung.
+    "Thiên Quý":   (vanKhucChi - ngayAm + 2 + 144) % 12,
     "Long Trì":    (CHI_INDEX["Thìn"] + chiNamIdx) % 12,
     "Phượng Các":  (CHI_INDEX["Tuất"] - chiNamIdx + 144) % 12,
     // Cặp Thai Phụ + Phong Cáo bao quanh Văn Khúc (cách 2 cung mỗi bên)
