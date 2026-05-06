@@ -3,21 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Lập lá số Tử Vi phái VN — chạy offline, lưu IndexedDB, xuất PNG/A4/JSON/MD" />
+  <meta name="theme-color" content="#303a52" />
   <title>Tử Vi Local — Lập lá số tại nhà</title>
-  <link rel="stylesheet" href="css/tokens.css?v=20260506d" />
-  <link rel="stylesheet" href="css/ui.css?v=20260506d" />
-  <link rel="stylesheet" href="css/chart.css?v=20260506d" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23303a52'/%3E%3Ctext x='16' y='22' font-family='serif' font-size='18' font-weight='700' fill='%23b03020' text-anchor='middle'%3E紫%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/tokens.css?v=20260506e" />
+  <link rel="stylesheet" href="css/ui.css?v=20260506e" />
+  <link rel="stylesheet" href="css/chart.css?v=20260506e" />
 </head>
 <body>
   <header class="app-header">
     <div class="brand">
-      <span class="brand-mark">紫微</span>
+      <span class="brand-mark" aria-hidden="true">紫微</span>
       <span class="brand-name">Tử Vi Local</span>
-      <span class="brand-tag">Lập lá số · Lưu offline · Phái VN</span>
+      <span class="brand-tag">Phái VN · Offline</span>
     </div>
     <div class="header-actions">
-      <button id="btn-saved" class="btn btn-ghost" title="Danh sách lá số đã lưu">📂 Đã lưu</button>
-      <button id="btn-settings" class="btn btn-ghost" title="Tuỳ chọn">⚙ Cài đặt</button>
+      <button id="btn-saved" class="btn btn-ghost" aria-label="Danh sách lá số đã lưu" title="Danh sách lá số đã lưu (Ctrl+L)"><span aria-hidden="true">📂</span> Đã lưu</button>
+      <button id="btn-settings" class="btn btn-ghost" aria-label="Tuỳ chọn cài đặt" title="Cài đặt"><span aria-hidden="true">⚙</span> Cài đặt</button>
     </div>
   </header>
 
@@ -60,22 +63,22 @@
         <label class="field">
           <span>Hoặc chọn giờ chi</span>
           <select id="in-chi-gio">
-            <option value="">— (nhập giờ số ở trên) —</option>
-            <option value="0">Tý sớm (23:00–00:59 → fill 0:00)</option>
-            <option value="2">Sửu (01:00–02:59 → fill 2:00)</option>
-            <option value="4">Dần (03:00–04:59 → fill 4:00)</option>
-            <option value="6">Mão (05:00–06:59 → fill 6:00)</option>
-            <option value="8">Thìn (07:00–08:59 → fill 8:00)</option>
-            <option value="10">Tỵ (09:00–10:59 → fill 10:00)</option>
-            <option value="12">Ngọ (11:00–12:59 → fill 12:00)</option>
-            <option value="14">Mùi (13:00–14:59 → fill 14:00)</option>
-            <option value="16">Thân (15:00–16:59 → fill 16:00)</option>
-            <option value="18">Dậu (17:00–18:59 → fill 18:00)</option>
-            <option value="20">Tuất (19:00–20:59 → fill 20:00)</option>
-            <option value="22">Hợi (21:00–22:59 → fill 22:00)</option>
-            <option value="23">Tý muộn (23:00–23:59 → fill 23:00)</option>
+            <option value="">— Nhập giờ số ở trên —</option>
+            <option value="0">Tý sớm · 00:00</option>
+            <option value="2">Sửu · 02:00</option>
+            <option value="4">Dần · 04:00</option>
+            <option value="6">Mão · 06:00</option>
+            <option value="8">Thìn · 08:00</option>
+            <option value="10">Tỵ · 10:00</option>
+            <option value="12">Ngọ · 12:00</option>
+            <option value="14">Mùi · 14:00</option>
+            <option value="16">Thân · 16:00</option>
+            <option value="18">Dậu · 18:00</option>
+            <option value="20">Tuất · 20:00</option>
+            <option value="22">Hợi · 22:00</option>
+            <option value="23">Tý muộn · 23:00</option>
           </select>
-          <small class="hint">Khi không biết giờ chính xác — chọn chi sẽ tự fill giờ vào ô trên. Nếu biết chính xác hơn (vd 11:30), chỉnh lại ô "Giờ"+"Phút".</small>
+          <small class="hint">Không biết giờ chính xác? Chọn chi → auto-fill giờ. Biết hơn (vd 11:30) thì chỉnh tay ô Giờ+Phút.</small>
         </label>
 
         <fieldset class="field-radio">
@@ -120,10 +123,8 @@
         </label>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">📜 Lập lá số</button>
-          <button type="button" id="btn-load-cs013" class="btn btn-ghost" title="Nhanh: load CS-013">CS-013</button>
-          <button type="button" id="btn-load-cs015" class="btn btn-ghost" title="CS-015">CS-015</button>
-          <button type="button" id="btn-load-cs016" class="btn btn-ghost" title="CS-016">CS-016</button>
+          <button type="submit" class="btn btn-primary"><span aria-hidden="true">📜</span> Lập lá số</button>
+          <button type="button" id="btn-form-reset" class="btn btn-ghost" title="Xoá form">↺ Reset</button>
         </div>
       </form>
 
@@ -138,19 +139,29 @@
       <div class="chart-toolbar">
         <h2 class="panel-title">Lá số</h2>
         <div class="toolbar-actions">
-          <button id="btn-analyze" class="btn btn-primary" disabled title="Spawn Claude → viết case study Mệnh 2.0 vào vault">📚 Phân tích → CS</button>
-          <button id="btn-save-chart" class="btn btn-ghost" disabled>💾 Lưu</button>
-          <button id="btn-print" class="btn btn-ghost" disabled>🖨 In A4</button>
-          <button id="btn-export-png" class="btn btn-ghost" disabled>🖼 PNG</button>
-          <button id="btn-export-json" class="btn btn-ghost" disabled>📄 JSON</button>
-          <button id="btn-export-md" class="btn btn-ghost" disabled>📝 MD</button>
+          <button id="btn-analyze" class="btn btn-primary" disabled aria-label="Phân tích thành Case Study qua Claude" title="Spawn Claude → viết case study Mệnh 2.0 vào vault"><span aria-hidden="true">📚</span> Phân tích → CS</button>
+          <button id="btn-save-chart" class="btn btn-ghost" disabled aria-label="Lưu lá số vào IndexedDB" title="Lưu lá số (Ctrl+S)"><span aria-hidden="true">💾</span> Lưu</button>
+          <div class="toolbar-export">
+            <button id="btn-export-toggle" class="btn btn-ghost" disabled aria-haspopup="true" aria-expanded="false" title="Xuất file"><span aria-hidden="true">⬇</span> Xuất ▾</button>
+            <div class="toolbar-export-menu hidden" role="menu">
+              <button id="btn-print" class="btn-export-item" disabled role="menuitem"><span aria-hidden="true">🖨</span> In A4</button>
+              <button id="btn-export-png" class="btn-export-item" disabled role="menuitem"><span aria-hidden="true">🖼</span> Lưu PNG</button>
+              <button id="btn-export-json" class="btn-export-item" disabled role="menuitem"><span aria-hidden="true">📄</span> Lưu JSON</button>
+              <button id="btn-export-md" class="btn-export-item" disabled role="menuitem"><span aria-hidden="true">📝</span> Lưu MD</button>
+            </div>
+          </div>
         </div>
       </div>
 
       <div id="chart-container" class="chart-container">
         <div class="chart-empty">
+          <div class="chart-empty-mark" aria-hidden="true">紫微</div>
           <p>Nhập thông tin sinh và bấm <strong>Lập lá số</strong> để bắt đầu.</p>
-          <p class="hint">App chạy hoàn toàn offline — không gửi data ra ngoài.</p>
+          <p class="hint">App chạy offline · Không gửi data ra ngoài · Phái VN</p>
+        </div>
+        <div id="chart-loading" class="chart-loading hidden" aria-live="polite" aria-busy="true">
+          <div class="loading-spinner" aria-hidden="true"></div>
+          <p>Đang lập lá số…</p>
         </div>
       </div>
     </section>
@@ -232,6 +243,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/main.js?v=20260506d"></script>
+  <script type="module" src="js/main.js?v=20260506e"></script>
 </body>
 </html>

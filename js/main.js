@@ -139,26 +139,37 @@ function readForm() {
 }
 
 function buildAndRender() {
-  try {
-    const input = readForm();
-    const chart = buildChart(input);
-    state.currentChart = chart;
-    renderCurrent();
+  // Show loading state
+  const loadingEl = $("#chart-loading");
+  const emptyEl = chartContainer.querySelector(".chart-empty");
+  if (loadingEl) loadingEl.classList.remove("hidden");
+  if (emptyEl) emptyEl.classList.add("hidden");
 
-    chartMeta.classList.remove("hidden");
-    renderMeta(metaList, chart);
+  // Defer build to next frame so loading UI paints
+  requestAnimationFrame(() => {
+    try {
+      const input = readForm();
+      const chart = buildChart(input);
+      state.currentChart = chart;
+      renderCurrent();
 
-    btnAnalyze.disabled = false;
-    btnSaveChart.disabled = false;
-    btnPrint.disabled = false;
-    btnExportPng.disabled = false;
-    btnExportJson.disabled = false;
-    btnExportMd.disabled = false;
-  } catch (err) {
-    console.error(err);
-    chartContainer.innerHTML = `<div class="chart-empty"><p style="color:#c0392b"><strong>Lỗi:</strong> ${err.message}</p>
-      <p class="hint">Kiểm tra lại input. App hỗ trợ ngày dương 1900-2100, mọi giờ.</p></div>`;
-  }
+      chartMeta.classList.remove("hidden");
+      renderMeta(metaList, chart);
+
+      btnAnalyze.disabled = false;
+      btnSaveChart.disabled = false;
+      btnPrint.disabled = false;
+      btnExportPng.disabled = false;
+      btnExportJson.disabled = false;
+      btnExportMd.disabled = false;
+      const exportToggleBtn = $("#btn-export-toggle");
+      if (exportToggleBtn) exportToggleBtn.disabled = false;
+    } catch (err) {
+      console.error(err);
+      chartContainer.innerHTML = `<div class="chart-empty"><p style="color:#c0392b"><strong>Lỗi:</strong> ${err.message}</p>
+        <p class="hint">Kiểm tra lại input. App hỗ trợ ngày dương 1900-2100, mọi giờ.</p></div>`;
+    }
+  });
 }
 
 function renderCurrent() {
@@ -172,16 +183,54 @@ function renderCurrent() {
 }
 
 // ============================================================
-// Quick load buttons
+// Form reset button
 // ============================================================
-$("#btn-load-cs013").addEventListener("click", () => {
-  fillForm({ name: "CS-013", year: 1988, month: 4, day: 11, hour: 11, minute: 25, gender: "nu" });
+$("#btn-form-reset").addEventListener("click", () => {
+  form.reset();
+  $("#in-year-view").value = new Date().getFullYear();
+  $("#in-chi-gio").value = "";
 });
-$("#btn-load-cs015").addEventListener("click", () => {
-  fillForm({ name: "CS-015", year: 1994, month: 11, day: 19, hour: 2, minute: 0, gender: "nam" });
-});
-$("#btn-load-cs016").addEventListener("click", () => {
-  fillForm({ name: "CS-016", year: 2000, month: 3, day: 10, hour: 19, minute: 45, gender: "nu" });
+
+// Export dropdown toggle
+// ============================================================
+const exportToggle = $("#btn-export-toggle");
+const exportMenu = document.querySelector(".toolbar-export-menu");
+if (exportToggle && exportMenu) {
+  exportToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = !exportMenu.classList.contains("hidden");
+    exportMenu.classList.toggle("hidden");
+    exportToggle.setAttribute("aria-expanded", String(!isOpen));
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".toolbar-export")) {
+      exportMenu.classList.add("hidden");
+      exportToggle.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+// Keyboard shortcuts
+// ============================================================
+document.addEventListener("keydown", (e) => {
+  // Cmd/Ctrl+S → Lưu
+  if ((e.metaKey || e.ctrlKey) && e.key === "s" && !btnSaveChart.disabled) {
+    e.preventDefault();
+    btnSaveChart.click();
+  }
+  // Cmd/Ctrl+L → Đã lưu
+  if ((e.metaKey || e.ctrlKey) && e.key === "l") {
+    e.preventDefault();
+    $("#btn-saved").click();
+  }
+  // Esc → close any open modal
+  if (e.key === "Escape") {
+    document.querySelectorAll(".modal:not(.hidden)").forEach(m => m.classList.add("hidden"));
+    if (exportMenu && !exportMenu.classList.contains("hidden")) {
+      exportMenu.classList.add("hidden");
+      exportToggle?.setAttribute("aria-expanded", "false");
+    }
+  }
 });
 
 function fillForm({ name, year, month, day, hour, minute, gender }) {
