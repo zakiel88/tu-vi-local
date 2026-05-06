@@ -162,8 +162,6 @@ function buildAndRender() {
       btnExportPng.disabled = false;
       btnExportJson.disabled = false;
       btnExportMd.disabled = false;
-      const exportToggleBtn = $("#btn-export-toggle");
-      if (exportToggleBtn) exportToggleBtn.disabled = false;
     } catch (err) {
       console.error(err);
       chartContainer.innerHTML = `<div class="chart-empty"><p style="color:#c0392b"><strong>Lỗi:</strong> ${err.message}</p>
@@ -191,25 +189,6 @@ $("#btn-form-reset").addEventListener("click", () => {
   $("#in-chi-gio").value = "";
 });
 
-// Export dropdown toggle
-// ============================================================
-const exportToggle = $("#btn-export-toggle");
-const exportMenu = document.querySelector(".toolbar-export-menu");
-if (exportToggle && exportMenu) {
-  exportToggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isOpen = !exportMenu.classList.contains("hidden");
-    exportMenu.classList.toggle("hidden");
-    exportToggle.setAttribute("aria-expanded", String(!isOpen));
-  });
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".toolbar-export")) {
-      exportMenu.classList.add("hidden");
-      exportToggle.setAttribute("aria-expanded", "false");
-    }
-  });
-}
-
 // Keyboard shortcuts
 // ============================================================
 document.addEventListener("keydown", (e) => {
@@ -226,10 +205,6 @@ document.addEventListener("keydown", (e) => {
   // Esc → close any open modal
   if (e.key === "Escape") {
     document.querySelectorAll(".modal:not(.hidden)").forEach(m => m.classList.add("hidden"));
-    if (exportMenu && !exportMenu.classList.contains("hidden")) {
-      exportMenu.classList.add("hidden");
-      exportToggle?.setAttribute("aria-expanded", "false");
-    }
   }
 });
 
