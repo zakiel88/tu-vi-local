@@ -76,6 +76,43 @@ const stShowLuu = $("#st-show-luu");
 $("#in-year-view").value = new Date().getFullYear();
 
 // ============================================================
+// Chi giờ ↔ giờ số: 2-way sync
+// ============================================================
+// Map: hour → chi (theo CHI_GIO trong data.js)
+function hourToChi(h) {
+  if (h === 23) return 23;          // Tý muộn
+  if (h === 0) return 0;             // Tý sớm
+  if (h >= 1 && h <= 2) return 2;    // Sửu
+  if (h >= 3 && h <= 4) return 4;    // Dần
+  if (h >= 5 && h <= 6) return 6;    // Mão
+  if (h >= 7 && h <= 8) return 8;    // Thìn
+  if (h >= 9 && h <= 10) return 10;  // Tỵ
+  if (h >= 11 && h <= 12) return 12; // Ngọ
+  if (h >= 13 && h <= 14) return 14; // Mùi
+  if (h >= 15 && h <= 16) return 16; // Thân
+  if (h >= 17 && h <= 18) return 18; // Dậu
+  if (h >= 19 && h <= 20) return 20; // Tuất
+  if (h >= 21 && h <= 22) return 22; // Hợi
+  return "";
+}
+
+// Khi chọn chi giờ → fill ô giờ + reset phút về 0
+$("#in-chi-gio").addEventListener("change", (e) => {
+  const v = e.target.value;
+  if (v === "") return;
+  $("#in-hour").value = v;
+  $("#in-minute").value = 0;
+});
+
+// Khi nhập giờ số → tự sync dropdown chi
+$("#in-hour").addEventListener("input", (e) => {
+  const h = parseInt(e.target.value, 10);
+  if (Number.isNaN(h)) return;
+  const chi = hourToChi(h);
+  $("#in-chi-gio").value = String(chi);
+});
+
+// ============================================================
 // Form submit → build + render
 // ============================================================
 form.addEventListener("submit", (e) => {
@@ -398,6 +435,7 @@ function fillFormFromInput(i, label) {
   $("#in-day").value = i.ngay;
   $("#in-hour").value = i.gio;
   $("#in-minute").value = i.phut;
+  $("#in-chi-gio").value = String(hourToChi(i.gio));
   form.gender.value = i.gioiTinh;
   $("#in-year-view").value = i.namXem;
   $("#in-lai-nhan").value = i.laiNhanCung || "";

@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tử Vi Local — Lập lá số tại nhà</title>
-  <link rel="stylesheet" href="css/tokens.css?v=20260506a" />
-  <link rel="stylesheet" href="css/ui.css?v=20260506a" />
-  <link rel="stylesheet" href="css/chart.css?v=20260506a" />
+  <link rel="stylesheet" href="css/tokens.css?v=20260506b" />
+  <link rel="stylesheet" href="css/ui.css?v=20260506b" />
+  <link rel="stylesheet" href="css/chart.css?v=20260506b" />
 </head>
 <body>
   <header class="app-header">
@@ -56,6 +56,27 @@
             <input type="number" id="in-minute" min="0" max="59" value="0" />
           </label>
         </div>
+
+        <label class="field">
+          <span>Hoặc chọn giờ chi</span>
+          <select id="in-chi-gio">
+            <option value="">— (nhập giờ số ở trên) —</option>
+            <option value="0">Tý sớm (23:00–00:59 → fill 0:00)</option>
+            <option value="2">Sửu (01:00–02:59 → fill 2:00)</option>
+            <option value="4">Dần (03:00–04:59 → fill 4:00)</option>
+            <option value="6">Mão (05:00–06:59 → fill 6:00)</option>
+            <option value="8">Thìn (07:00–08:59 → fill 8:00)</option>
+            <option value="10">Tỵ (09:00–10:59 → fill 10:00)</option>
+            <option value="12">Ngọ (11:00–12:59 → fill 12:00)</option>
+            <option value="14">Mùi (13:00–14:59 → fill 14:00)</option>
+            <option value="16">Thân (15:00–16:59 → fill 16:00)</option>
+            <option value="18">Dậu (17:00–18:59 → fill 18:00)</option>
+            <option value="20">Tuất (19:00–20:59 → fill 20:00)</option>
+            <option value="22">Hợi (21:00–22:59 → fill 22:00)</option>
+            <option value="23">Tý muộn (23:00–23:59 → fill 23:00)</option>
+          </select>
+          <small class="hint">Khi không biết giờ chính xác — chọn chi sẽ tự fill giờ vào ô trên. Nếu biết chính xác hơn (vd 11:30), chỉnh lại ô "Giờ"+"Phút".</small>
+        </label>
 
         <fieldset class="field-radio">
           <legend>Giới tính</legend>
@@ -211,6 +232,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/main.js?v=20260506a"></script>
+  <script type="module" src="js/main.js?v=20260506b"></script>
 </body>
 </html>
