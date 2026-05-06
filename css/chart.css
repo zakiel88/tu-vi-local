@@ -141,6 +141,15 @@
   border-top-color: var(--color-accent-navy);
   border-top-style: dashed;
 }
+.legend-row-source {
+  font-size: 6.5pt;
+  color: var(--color-ink-mute);
+  font-style: italic;
+  width: 100%;
+  padding-top: 1mm;
+  border-top: 1px dotted var(--color-line-soft);
+}
+.legend-row-source strong { color: var(--color-ink-soft); font-style: normal; }
 .a4-footer-meta {
   display: flex;
   justify-content: space-between;
@@ -508,22 +517,14 @@
   letter-spacing: 0.1em;
   opacity: 0.65;
 }
-/* Miếu Vượng badge — chuyển từ letter color sang colored chip */
+/* Miếu Vượng — letter đơn giản, có màu để scan, không cầu kỳ */
 .chinh-star .mv {
   flex-shrink: 0;
-  font-size: 6.8pt;
+  font-size: 8pt;
   font-weight: 800;
   letter-spacing: 0.04em;
   font-family: var(--font-sans);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 3.5mm;
-  height: 3.5mm;
-  padding: 0 0.8mm;
-  border-radius: 50%;
-  color: var(--color-bg-elevated);
-  line-height: 1;
+  margin-left: 0.2mm;
 }
 
 /* === 2 CỘT CÁT | SÁT === */
@@ -603,13 +604,7 @@
 .hanh-tag-Thổ   { background: var(--color-hanh-tho); }
 
 
-/* Mieu Vuong palette — colored chip background (đổi từ text color sang bg) */
-.chinh-star .mv-M { background: var(--color-mieu); }
-.chinh-star .mv-V { background: var(--color-vuong); }
-.chinh-star .mv-Đ { background: var(--color-dac); }
-.chinh-star .mv-B { background: var(--color-binh); }
-.chinh-star .mv-H { background: var(--color-ham); }
-/* Default (text-only) cho legend hoặc inline */
+/* Mieu Vuong palette — letter color đơn giản */
 .mv-M { color: var(--color-mieu); }
 .mv-V { color: var(--color-vuong); }
 .mv-Đ { color: var(--color-dac); }

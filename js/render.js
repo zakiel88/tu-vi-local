@@ -147,28 +147,31 @@ function renderA4Footer(chart) {
     ? "Cách cục: " + chart.cachCuc.map(c => c.ten).join(" · ")
     : "";
 
-  // Legend block
+  // Legend block — đơn giản, dùng letter colored
   const legend = document.createElement("div");
   legend.className = "a4-legend";
   legend.innerHTML = `
     <div class="legend-row">
       <span class="legend-group"><strong>Miếu/Vượng:</strong>
-        <span class="lg-mv"><span class="mv-chip mv-bg-M">M</span> Miếu</span>
-        <span class="lg-mv"><span class="mv-chip mv-bg-V">V</span> Vượng</span>
-        <span class="lg-mv"><span class="mv-chip mv-bg-Đ">Đ</span> Đắc</span>
-        <span class="lg-mv"><span class="mv-chip mv-bg-B">B</span> Bình</span>
-        <span class="lg-mv"><span class="mv-chip mv-bg-H">H</span> Hãm</span>
+        <span class="mv-M">M</span>:Miếu
+        <span class="mv-V">V</span>:Vượng
+        <span class="mv-Đ">Đ</span>:Đắc
+        <span class="mv-B">B</span>:Bình
+        <span class="mv-H">H</span>:Hãm
       </span>
       <span class="legend-group"><strong>Hoá:</strong>
-        <span class="hoa-badge hoa-loc">L</span><span class="lg-text">Lộc</span>
-        <span class="hoa-badge hoa-quyen">Q</span><span class="lg-text">Quyền</span>
-        <span class="hoa-badge hoa-khoa">K</span><span class="lg-text">Khoa</span>
+        <span class="hoa-badge hoa-loc">L</span> Lộc
+        <span class="hoa-badge hoa-quyen">Q</span> Quyền
+        <span class="hoa-badge hoa-khoa">K</span> Khoa
         <span class="hoa-badge hoa-ky">Kỵ</span>
       </span>
       <span class="legend-group"><strong>Đường:</strong>
-        <span class="lg-line lg-line-doi"></span> đối cung
-        <span class="lg-line lg-line-tam"></span> tam hợp
+        <span class="lg-line lg-line-doi"></span>đối cung
+        <span class="lg-line lg-line-tam"></span>tam hợp
       </span>
+    </div>
+    <div class="legend-row legend-row-source">
+      <span>Bảng Miếu Vượng theo <strong>Vũ Tài Lộc</strong> (Tử Vi Đẩu Số Tân Biên) — phái VN. Có thể khác bảng Thiên Lương / Toàn Thư / tuvi.vn ở vài sao do dị biệt giữa các tác giả.</span>
     </div>
   `;
 
