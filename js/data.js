@@ -100,46 +100,49 @@ export const NAP_AM = {
 };
 
 // Bảng Cục — sửa cells SAI từ Phase A.5 (Mậu Quý)
+// Bảng Cục — verified 2026-05-06 bằng Nạp Âm derivation (Ngũ Hổ Độn + Hoa Giáp 60)
+// Khớp với Tử Vi Đẩu Số Toàn Thư + tuvi.vn standard.
+// Logic: cung Mệnh có Can theo Ngũ Hổ Độn từ Can năm; Nạp Âm của Can-Chi cung Mệnh → Cục.
 export const CUC_TABLE = {
   "Giáp Kỷ": {
-    "Tý Sửu":   "Thuỷ Nhị",
-    "Dần Mão":  "Hoả Lục",
-    "Thìn Tỵ":  "Mộc Tam",
-    "Ngọ Mùi":  "Thổ Ngũ",
-    "Thân Dậu": "Kim Tứ",
-    "Tuất Hợi": "Hoả Lục",
+    "Tý Sửu":   "Thuỷ Nhị",   // Bính Tý/Đinh Sửu → Giản Hạ Thuỷ
+    "Dần Mão":  "Hoả Lục",     // Bính Dần/Đinh Mão → Lô Trung Hoả
+    "Thìn Tỵ":  "Mộc Tam",     // Mậu Thìn/Kỷ Tỵ → Đại Lâm Mộc
+    "Ngọ Mùi":  "Thổ Ngũ",     // Canh Ngọ/Tân Mùi → Lộ Bàng Thổ
+    "Thân Dậu": "Kim Tứ",      // Nhâm Thân/Quý Dậu → Kiếm Phong Kim
+    "Tuất Hợi": "Hoả Lục",     // Giáp Tuất/Ất Hợi → Sơn Đầu Hoả
   },
   "Ất Canh": {
-    "Tý Sửu":   "Hoả Lục",
-    "Dần Mão":  "Thổ Ngũ",
-    "Thìn Tỵ":  "Kim Tứ",
-    "Ngọ Mùi":  "Mộc Tam",
-    "Thân Dậu": "Thuỷ Nhị",
-    "Tuất Hợi": "Hoả Lục",
+    "Tý Sửu":   "Hoả Lục",     // Mậu Tý/Kỷ Sửu → Tích Lịch Hoả
+    "Dần Mão":  "Thổ Ngũ",     // Mậu Dần/Kỷ Mão → Thành Đầu Thổ
+    "Thìn Tỵ":  "Kim Tứ",      // Canh Thìn/Tân Tỵ → Bạch Lạp Kim
+    "Ngọ Mùi":  "Mộc Tam",     // Nhâm Ngọ/Quý Mùi → Dương Liễu Mộc
+    "Thân Dậu": "Thuỷ Nhị",    // Giáp Thân/Ất Dậu → Tuyền Trung Thuỷ
+    "Tuất Hợi": "Thổ Ngũ",     // Bính Tuất/Đinh Hợi → Ốc Thượng Thổ — FIX 2026-05-06 (was Hoả Lục)
   },
   "Bính Tân": {
-    "Tý Sửu":   "Thổ Ngũ",
-    "Dần Mão":  "Hoả Lục",
-    "Thìn Tỵ":  "Thuỷ Nhị",
-    "Ngọ Mùi":  "Kim Tứ",
-    "Thân Dậu": "Mộc Tam",
-    "Tuất Hợi": "Thổ Ngũ",
+    "Tý Sửu":   "Thổ Ngũ",     // Canh Tý/Tân Sửu → Bích Thượng Thổ
+    "Dần Mão":  "Mộc Tam",     // Canh Dần/Tân Mão → Tùng Bách Mộc — FIX (was Hoả Lục)
+    "Thìn Tỵ":  "Thuỷ Nhị",    // Nhâm Thìn/Quý Tỵ → Trường Lưu Thuỷ
+    "Ngọ Mùi":  "Kim Tứ",      // Giáp Ngọ/Ất Mùi → Sa Trung Kim
+    "Thân Dậu": "Hoả Lục",     // Bính Thân/Đinh Dậu → Sơn Hạ Hoả — FIX (was Mộc Tam)
+    "Tuất Hợi": "Mộc Tam",     // Mậu Tuất/Kỷ Hợi → Bình Địa Mộc — FIX (was Thổ Ngũ)
   },
   "Đinh Nhâm": {
-    "Tý Sửu":   "Mộc Tam",
-    "Dần Mão":  "Kim Tứ",
-    "Thìn Tỵ":  "Thổ Ngũ",
-    "Ngọ Mùi":  "Hoả Lục",
-    "Thân Dậu": "Hoả Lục",
-    "Tuất Hợi": "Mộc Tam",
+    "Tý Sửu":   "Mộc Tam",     // Nhâm Tý/Quý Sửu → Tang Đố Mộc
+    "Dần Mão":  "Kim Tứ",      // Nhâm Dần/Quý Mão → Kim Bạch Kim
+    "Thìn Tỵ":  "Hoả Lục",     // Giáp Thìn/Ất Tỵ → Phú Đăng Hoả — FIX (was Thổ Ngũ)
+    "Ngọ Mùi":  "Thuỷ Nhị",    // Bính Ngọ/Đinh Mùi → Thiên Hà Thuỷ — FIX (was Hoả Lục)
+    "Thân Dậu": "Thổ Ngũ",     // Mậu Thân/Kỷ Dậu → Đại Trạch Thổ — FIX (was Hoả Lục)
+    "Tuất Hợi": "Kim Tứ",      // Canh Tuất/Tân Hợi → Thoa Xuyến Kim — FIX (was Mộc Tam)
   },
   "Mậu Quý": {
-    "Tý Sửu":   "Hoả Lục",   // sửa A.5
-    "Dần Mão":  "Thuỷ Nhị",
-    "Thìn Tỵ":  "Hoả Lục",
-    "Ngọ Mùi":  "Thuỷ Nhị",
-    "Thân Dậu": "Mộc Tam",   // sửa A.5 (verify CS-013)
-    "Tuất Hợi": "Kim Tứ",
+    "Tý Sửu":   "Kim Tứ",      // Giáp Tý/Ất Sửu → Hải Trung Kim — FIX 2026-05-06 (was Hoả Lục, sai A.5 cũ revert)
+    "Dần Mão":  "Thuỷ Nhị",    // Giáp Dần/Ất Mão → Đại Khê Thuỷ
+    "Thìn Tỵ":  "Thổ Ngũ",     // Bính Thìn/Đinh Tỵ → Sa Trung Thổ — FIX (was Hoả Lục)
+    "Ngọ Mùi":  "Hoả Lục",     // Mậu Ngọ/Kỷ Mùi → Thiên Thượng Hoả — FIX (was Thuỷ Nhị)
+    "Thân Dậu": "Mộc Tam",     // Canh Thân/Tân Dậu → Thạch Lựu Mộc
+    "Tuất Hợi": "Thuỷ Nhị",    // Nhâm Tuất/Quý Hợi → Đại Hải Thuỷ — FIX (was Kim Tứ)
   },
 };
 
