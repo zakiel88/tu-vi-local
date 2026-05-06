@@ -133,7 +133,11 @@ export function anSaoLe({ canNam, chiNam, thangAm, ngayAm, chiGio,
     "Thiên La":    CHI_INDEX["Thìn"],                       // cố định Thìn
     "Địa Võng":    CHI_INDEX["Tuất"],                       // cố định Tuất
     "Kiếp Sát":    chiIdx(KIEP_SAT[tamHop]),                // chi năm tam hợp + 9
-    "Giải Thần":   chiIdx(GIAI_THAN[tamHop]),               // chi cuối tam hợp năm
+    // Giải Thần: khởi Thân = tháng 1, đếm THUẬN theo tháng âm.
+    // Nguồn: Tử Vi Đẩu Số Toàn Thư + vault note Giải Thần.md.
+    // FIX 2026-05-06: trước dùng tam hợp tail (sai).
+    // Lưu ý: tuvi.vn dùng "Đại Giải Thần" (khởi Tuất nghịch chi năm) — sao khác.
+    "Giải Thần":   (CHI_INDEX["Thân"] + thangAm - 1) % 12,
 
     // Cố định cung
     "Thiên Thương": cungNoBocChi,
