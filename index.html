@@ -7,9 +7,9 @@
   <meta name="theme-color" content="#303a52" />
   <title>Tử Vi Local — Lập lá số tại nhà</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23303a52'/%3E%3Ctext x='16' y='22' font-family='serif' font-size='18' font-weight='700' fill='%23b03020' text-anchor='middle'%3E紫%3C/text%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="css/tokens.css?v=20260506f" />
-  <link rel="stylesheet" href="css/ui.css?v=20260506f" />
-  <link rel="stylesheet" href="css/chart.css?v=20260506f" />
+  <link rel="stylesheet" href="css/tokens.css?v=20260506g" />
+  <link rel="stylesheet" href="css/ui.css?v=20260506g" />
+  <link rel="stylesheet" href="css/chart.css?v=20260506g" />
 </head>
 <body>
   <header class="app-header">
@@ -140,6 +140,7 @@
         <h2 class="panel-title">Lá số</h2>
         <div class="toolbar-actions">
           <button id="btn-analyze" class="btn btn-primary" disabled aria-label="Phân tích thành Case Study qua Claude" title="Spawn Claude → viết case study Mệnh 2.0 vào vault"><span aria-hidden="true">📚</span> Phân tích → CS</button>
+          <button id="btn-toggle-compact" class="btn btn-ghost" disabled aria-pressed="false" title="Chế độ Gọn — chỉ hiện chính tinh + cát/sát + Hoá">⊟ Gọn</button>
           <button id="btn-save-chart" class="btn btn-ghost" disabled aria-label="Lưu lá số vào IndexedDB" title="Lưu lá số (Ctrl+S)"><span aria-hidden="true">💾</span> Lưu</button>
           <button id="btn-print" class="btn btn-ghost" disabled aria-label="In A4"><span aria-hidden="true">🖨</span> In A4</button>
           <button id="btn-export-png" class="btn btn-ghost" disabled aria-label="Lưu PNG"><span aria-hidden="true">🖼</span> PNG</button>
@@ -238,6 +239,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/main.js?v=20260506f"></script>
+  <script type="module" src="js/main.js?v=20260506g"></script>
 </body>
 </html>

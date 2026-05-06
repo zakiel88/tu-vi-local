@@ -24,6 +24,7 @@ const API_URL = (() => {
 // ============================================================
 const state = {
   currentChart: null,
+  compactMode: false,
   settings: {
     showVong: true,
     showLuu: true,
@@ -45,6 +46,7 @@ const btnAnalyze = $("#btn-analyze");
 const btnSaveChart = $("#btn-save-chart");
 const btnPrint = $("#btn-print");
 const btnExportPng = $("#btn-export-png");
+const btnToggleCompact = $("#btn-toggle-compact");
 const btnExportJson = $("#btn-export-json");
 const btnExportMd = $("#btn-export-md");
 
@@ -162,6 +164,12 @@ function buildAndRender() {
       btnExportPng.disabled = false;
       btnExportJson.disabled = false;
       btnExportMd.disabled = false;
+      if (btnToggleCompact) btnToggleCompact.disabled = false;
+      // Re-apply compact state after re-render
+      if (state.compactMode) {
+        const ch = document.querySelector(".chart");
+        if (ch) ch.classList.add("compact");
+      }
     } catch (err) {
       console.error(err);
       chartContainer.innerHTML = `<div class="chart-empty"><p style="color:#c0392b"><strong>Lỗi:</strong> ${err.message}</p>
@@ -188,6 +196,21 @@ $("#btn-form-reset").addEventListener("click", () => {
   $("#in-year-view").value = new Date().getFullYear();
   $("#in-chi-gio").value = "";
 });
+
+// Compact mode toggle
+// ============================================================
+if (btnToggleCompact) {
+  btnToggleCompact.addEventListener("click", () => {
+    state.compactMode = !state.compactMode;
+    const ch = document.querySelector(".chart");
+    if (ch) ch.classList.toggle("compact", state.compactMode);
+    btnToggleCompact.textContent = state.compactMode ? "⊞ Đầy đủ" : "⊟ Gọn";
+    btnToggleCompact.setAttribute("aria-pressed", String(state.compactMode));
+    btnToggleCompact.title = state.compactMode
+      ? "Chế độ Đầy đủ — hiện cả vòng + sao lưu + sao lẻ"
+      : "Chế độ Gọn — chỉ hiện chính tinh + cát/sát + Hoá";
+  });
+}
 
 // Keyboard shortcuts
 // ============================================================

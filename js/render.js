@@ -146,10 +146,41 @@ function renderA4Footer(chart) {
   const cachCucStr = chart.cachCuc.length > 0
     ? "Cách cục: " + chart.cachCuc.map(c => c.ten).join(" · ")
     : "";
-  f.innerHTML = `
+
+  // Legend block
+  const legend = document.createElement("div");
+  legend.className = "a4-legend";
+  legend.innerHTML = `
+    <div class="legend-row">
+      <span class="legend-group"><strong>Miếu/Vượng:</strong>
+        <span class="lg-mv"><span class="mv-chip mv-bg-M">M</span> Miếu</span>
+        <span class="lg-mv"><span class="mv-chip mv-bg-V">V</span> Vượng</span>
+        <span class="lg-mv"><span class="mv-chip mv-bg-Đ">Đ</span> Đắc</span>
+        <span class="lg-mv"><span class="mv-chip mv-bg-B">B</span> Bình</span>
+        <span class="lg-mv"><span class="mv-chip mv-bg-H">H</span> Hãm</span>
+      </span>
+      <span class="legend-group"><strong>Hoá:</strong>
+        <span class="hoa-badge hoa-loc">L</span><span class="lg-text">Lộc</span>
+        <span class="hoa-badge hoa-quyen">Q</span><span class="lg-text">Quyền</span>
+        <span class="hoa-badge hoa-khoa">K</span><span class="lg-text">Khoa</span>
+        <span class="hoa-badge hoa-ky">Kỵ</span>
+      </span>
+      <span class="legend-group"><strong>Đường:</strong>
+        <span class="lg-line lg-line-doi"></span> đối cung
+        <span class="lg-line lg-line-tam"></span> tam hợp
+      </span>
+    </div>
+  `;
+
+  const meta = document.createElement("div");
+  meta.className = "a4-footer-meta";
+  meta.innerHTML = `
     <span>${escapeHtml(cachCucStr)}</span>
     <span>Tử Vi Local · Phái VN · ${new Date(chart.createdAt).toLocaleDateString("vi-VN")}</span>
   `;
+
+  f.appendChild(legend);
+  f.appendChild(meta);
   return f;
 }
 

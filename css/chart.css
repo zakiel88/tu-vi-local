@@ -73,7 +73,79 @@
   font-size: 8pt;
   color: var(--color-ink-mute);
   display: flex;
+  flex-direction: column;
+  gap: 1.5mm;
+}
+.a4-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4mm;
+  font-size: 7.5pt;
+  color: var(--color-ink-soft);
+  align-items: center;
+}
+.a4-legend .legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4mm;
+  align-items: center;
+  width: 100%;
+}
+.legend-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5mm;
+  flex-wrap: wrap;
+}
+.legend-group strong {
+  color: var(--color-ink-soft);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 6.5pt;
+}
+.lg-mv {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8mm;
+  font-size: 7pt;
+}
+.mv-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2mm;
+  height: 3.2mm;
+  border-radius: 50%;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 6pt;
+  color: var(--color-bg-elevated);
+  line-height: 1;
+}
+.mv-bg-M { background: var(--color-mieu); }
+.mv-bg-V { background: var(--color-vuong); }
+.mv-bg-Đ { background: var(--color-dac); }
+.mv-bg-B { background: var(--color-binh); }
+.mv-bg-H { background: var(--color-ham); }
+.lg-text { font-size: 7pt; }
+.lg-line {
+  display: inline-block;
+  width: 8mm;
+  height: 0;
+  border-top: 1px dashed var(--color-accent-red);
+  vertical-align: middle;
+  margin: 0 0.5mm;
+}
+.lg-line-tam {
+  border-top-color: var(--color-accent-navy);
+  border-top-style: dashed;
+}
+.a4-footer-meta {
+  display: flex;
   justify-content: space-between;
+  font-size: 8pt;
+  color: var(--color-ink-mute);
 }
 
 .chart-frame {
@@ -126,18 +198,18 @@
 }
 .line-doi {
   stroke: var(--color-accent-red);
-  stroke-width: 0.8;                /* hairline cho subtle effect */
+  stroke-width: 1.0;
   fill: none;
-  opacity: 0.32;
-  stroke-dasharray: 4 3;
+  opacity: 0.5;                     /* tăng từ 0.32 — visible hơn */
+  stroke-dasharray: 5 3;
   vector-effect: non-scaling-stroke;
 }
 .line-tam {
-  stroke: var(--color-accent-red);
-  stroke-width: 0.7;
+  stroke: var(--color-accent-navy);  /* đổi từ red sang navy để phân biệt với đối */
+  stroke-width: 0.8;
   fill: none;
   stroke-dasharray: 3 3;
-  opacity: 0.25;
+  opacity: 0.35;                     /* tăng từ 0.25 */
   vector-effect: non-scaling-stroke;
 }
 
@@ -343,7 +415,7 @@
   align-items: baseline;
   gap: 1mm;
   border-bottom: 1px dotted var(--color-line);
-  padding-bottom: 1mm;
+  padding-bottom: 0.8mm;
   margin-bottom: 0.3mm;
   flex-wrap: nowrap;
   min-width: 0;
@@ -352,34 +424,35 @@
 .than-tag {
   display: inline-block;
   margin-left: 1mm;
-  padding: 0 1mm;
-  font-size: 7pt;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  padding: 0.2mm 1.2mm;
+  font-size: 6.5pt;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-bg-elevated);
   background: var(--color-accent-gold);
   border-radius: 1mm;
   vertical-align: middle;
   font-family: var(--font-sans);
+  line-height: 1.5;
 }
 .cung-can-chi {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.5mm;
+  gap: 0.6mm;
   white-space: nowrap;
 }
 .cung-name {
   font-family: var(--font-serif);
-  font-size: 11.5pt;
+  font-size: 11pt;
   font-weight: 700;
   color: var(--color-accent-navy);
   letter-spacing: 0.02em;
 }
-.cung-name.is-menh { color: var(--color-accent-red); }
+.cung-name.is-menh { color: var(--color-accent-red); font-weight: 800; }
 .cung-can-chi {
-  font-size: 8pt;
+  font-size: 7.5pt;
   color: var(--color-ink-mute);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -387,11 +460,20 @@
   font-family: var(--font-sans);
 }
 .cung-dh-badge {
-  font-size: 8pt;
+  font-size: 7pt;
   color: var(--color-accent-gold);
   font-weight: 700;
   letter-spacing: 0.04em;
   font-family: var(--font-sans);
+  margin-top: -0.2mm;
+  margin-bottom: 0.3mm;
+}
+/* ĐH hiện tại — làm nổi bật hơn */
+.cung.is-dh-current .cung-dh-badge {
+  background: rgba(201, 163, 82, 0.15);
+  padding: 0.3mm 1.5mm;
+  border-radius: 0.8mm;
+  display: inline-block;
 }
 
 /* === CHÍNH TINH (giữa, lớn, prominent) === */
@@ -400,22 +482,23 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin: 0.3mm 0 0.8mm;
-  gap: 0.2mm;
+  margin: 0.4mm 0 1mm;
+  gap: 0.3mm;
 }
 .chinh-star {
   display: inline-flex;
-  align-items: baseline;
-  gap: 0.8mm;
+  align-items: center;
+  gap: 1mm;
   white-space: nowrap;
   max-width: 100%;
 }
 .chinh-name {
   font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: 13pt;
+  font-weight: 800;             /* tăng từ 700 — đậm hơn */
+  font-size: 14pt;               /* tăng từ 13pt */
   color: var(--color-chinh);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
 }
 .cung-vcd {
   font-family: var(--font-serif);
@@ -423,13 +506,24 @@
   color: var(--color-ink-mute);
   font-style: italic;
   letter-spacing: 0.1em;
+  opacity: 0.65;
 }
+/* Miếu Vượng badge — chuyển từ letter color sang colored chip */
 .chinh-star .mv {
   flex-shrink: 0;
-  font-size: 8pt;
+  font-size: 6.8pt;
   font-weight: 800;
   letter-spacing: 0.04em;
   font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.5mm;
+  height: 3.5mm;
+  padding: 0 0.8mm;
+  border-radius: 50%;
+  color: var(--color-bg-elevated);
+  line-height: 1;
 }
 
 /* === 2 CỘT CÁT | SÁT === */
@@ -462,11 +556,11 @@
 }
 .cung-cols:not(.cung-cols-single) .col-sat { padding-left: 0.8mm; }
 .phu {
-  font-size: 9pt;
-  line-height: 1.2;
+  font-size: 8.5pt;             /* giảm từ 9pt */
+  line-height: 1.18;            /* tighter */
   font-weight: 600;
-  word-break: keep-all;        /* không gãy giữa từ Hán Việt */
-  overflow-wrap: anywhere;     /* nhưng cho phép wrap nếu vẫn quá dài */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 .phu-cat { color: var(--color-cat); }
 .phu-sat { color: var(--color-sat); }
@@ -474,18 +568,19 @@
 /* Sao lẻ — full width, dùng khi sao không thuộc cát/sát */
 .phu-le-list {
   list-style: none;
-  margin: 0.3mm 0 0;
+  margin: 0.4mm 0 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0 1.2mm;
+  gap: 0.2mm 1.2mm;
   font-family: var(--font-serif);
   justify-content: center;
 }
 .phu-le {
-  font-size: 8pt;
+  font-size: 7.5pt;             /* giảm từ 8pt — tertiary level */
   color: var(--color-le);
   font-weight: 500;
+  opacity: 0.85;
 }
 
 /* === HÀNH TAG === */
@@ -508,7 +603,13 @@
 .hanh-tag-Thổ   { background: var(--color-hanh-tho); }
 
 
-/* Mieu Vuong palette */
+/* Mieu Vuong palette — colored chip background (đổi từ text color sang bg) */
+.chinh-star .mv-M { background: var(--color-mieu); }
+.chinh-star .mv-V { background: var(--color-vuong); }
+.chinh-star .mv-Đ { background: var(--color-dac); }
+.chinh-star .mv-B { background: var(--color-binh); }
+.chinh-star .mv-H { background: var(--color-ham); }
+/* Default (text-only) cho legend hoặc inline */
 .mv-M { color: var(--color-mieu); }
 .mv-V { color: var(--color-vuong); }
 .mv-Đ { color: var(--color-dac); }
@@ -547,24 +648,38 @@
   border-top: 1px dotted var(--color-line);
   display: flex;
   flex-direction: column;
-  gap: 0.3mm;
-  font-size: 8pt;
+  gap: 0.4mm;
+  font-size: 7.5pt;             /* giảm từ 8pt */
   font-family: var(--font-sans);
-  line-height: 1.25;
+  line-height: 1.2;
 }
 .extra-row {
   color: var(--color-ink-mute);
+  display: flex;
+  gap: 1mm;
+  align-items: baseline;
 }
 .extra-row .label {
   display: inline-block;
-  min-width: 8mm;
+  min-width: 7mm;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--color-ink-soft);
   text-transform: uppercase;
-  font-size: 7pt;
+  font-size: 6.5pt;             /* nhỏ hơn để không cạnh tranh */
+  flex-shrink: 0;
+  padding: 0.2mm 0;
 }
+.extra-row .value { flex: 1; min-width: 0; }
 .luu-star { color: var(--color-luu); font-weight: 600; }
+/* Lưu rows có border-left subtle để phân biệt với bản */
+.extra-row.luu-star .label {
+  color: var(--color-luu);
+  background: rgba(108, 78, 154, 0.08);
+  border-radius: 0.5mm;
+  padding-left: 0.6mm;
+  padding-right: 0.6mm;
+}
 
 /* === Tuần/Triệt — corner banner thay vì stripe overlay === */
 .cung.has-tuan,
@@ -660,6 +775,18 @@
   font-size: var(--text-sm);
 }
 .detail-section ul { padding-left: var(--sp-4); }
+
+/* === Compact mode — ẩn vòng + sao lưu + sao lẻ + L.Hoá === */
+.chart.compact .cung-extra,
+.chart.compact .phu-le-list {
+  display: none;
+}
+.chart.compact .cung {
+  padding-bottom: 3mm;
+}
+.chart.compact .chinh-name {
+  font-size: 15pt;          /* tăng nhỏ trong compact mode để dominate */
+}
 
 /* === Responsive — scale A4 page xuống nếu screen hẹp === */
 @media (max-width: 900px) {
