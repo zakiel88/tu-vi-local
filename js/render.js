@@ -171,7 +171,7 @@ function renderA4Footer(chart) {
       </span>
     </div>
     <div class="legend-row legend-row-source">
-      <span>Bảng Miếu Vượng theo <strong>Vũ Tài Lộc</strong> (Tử Vi Đẩu Số Tân Biên) — phái VN. Có thể khác bảng Thiên Lương / Toàn Thư / tuvi.vn ở vài sao do dị biệt giữa các tác giả.</span>
+      <span>Bảng Miếu Vượng: <strong>${chart.input.bangMieuVuong === "tq" ? "Tử Vi Đẩu Số Toàn Thư (TQ)" : "Vũ Tài Lộc — Tử Vi Đẩu Số Tân Biên (VN)"}</strong>. Có thể đổi trong Cài đặt. Các tác giả khác nhau có dị biệt nhỏ ở vài sao.</span>
     </div>
   `;
 

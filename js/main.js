@@ -125,6 +125,7 @@ form.addEventListener("submit", (e) => {
 function readForm() {
   const gioiTinh = form.gender.value;
   const foreignSchoolEl = document.querySelector('input[name="foreignSchool"]:checked');
+  const bangMieuVuongEl = document.querySelector('input[name="bangMieuVuong"]:checked');
   return {
     nam: parseInt($("#in-year").value, 10),
     thang: parseInt($("#in-month").value, 10),
@@ -137,6 +138,7 @@ function readForm() {
     laiNhanCung: $("#in-lai-nhan").value || null,
     timeZone: parseFloat($("#in-timezone").value || "7"),
     foreignSchool: foreignSchoolEl?.value || "vn",
+    bangMieuVuong: bangMieuVuongEl?.value || "vn",
   };
 }
 
@@ -513,6 +515,13 @@ stShowVong.addEventListener("change", () => {
 stShowLuu.addEventListener("change", () => {
   state.settings.showLuu = stShowLuu.checked;
   renderCurrent();
+});
+
+// Bảng Miếu Vượng — đổi bảng → rebuild chart (vì miếu vượng tính ở engine)
+document.querySelectorAll('input[name="bangMieuVuong"]').forEach(el => {
+  el.addEventListener("change", () => {
+    if (state.currentChart) buildAndRender();
+  });
 });
 
 // ============================================================

@@ -29,6 +29,7 @@ const LUC_SAT = new Set(["Kình Dương", "Đà La", "Hoả Tinh", "Linh Tinh", 
  */
 export function buildChart(input) {
   const phai = input.phai || "vn";
+  const bangMieuVuong = input.bangMieuVuong || "vn";   // "vn" | "tq" — bảng Miếu Vượng
   const timeZone = input.timeZone ?? DEFAULT_TZ;
   const foreignSchool = input.foreignSchool || "vn";   // "vn" | "local"
 
@@ -64,7 +65,7 @@ export function buildChart(input) {
 
   // 4. 14 chính tinh + group
   const chinhTinh = an14ChinhTinh(cuc, ngayAm);
-  const cungChinhTinh = groupChinhTinhByCung(chinhTinh);
+  const cungChinhTinh = groupChinhTinhByCung(chinhTinh, bangMieuVuong);
   const cachCuc = detectCachCuc(cungChinhTinh);
 
   // 5. Phụ tinh
@@ -157,6 +158,7 @@ export function buildChart(input) {
       namXem,
       laiNhanCung: input.laiNhanCung || null,
       phai,
+      bangMieuVuong,
       timeZone,
       foreignSchool,
     },

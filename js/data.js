@@ -313,6 +313,8 @@ export const CHINH_TINH_14 = [
 // Format: Object<sao, [chi0..chi11]> với chi 0=Tí, 1=Sửu, ..., 11=Hợi
 // Values: M=Miếu, V=Vượng, Đ=Đắc, B=Bình hoà, H=Hãm
 
+// === Bảng Miếu Vượng — phái VN (Vũ Tài Lộc — Tử Vi Đẩu Số Tân Biên 1992) ===
+// Bảng phổ biến nhất ở VN.
 export const MIEU_VUONG_VN = {
   //          Tí, Sửu, Dần, Mão, Thìn, Tỵ, Ngọ, Mùi, Thân, Dậu, Tuất, Hợi
   "Tử Vi":   ["V","B","Đ","H","V","H","M","B","Đ","H","V","H"],
@@ -329,6 +331,36 @@ export const MIEU_VUONG_VN = {
   "Thiên Lương":["M","V","M","Đ","B","H","M","V","M","Đ","B","H"],
   "Thất Sát":["Đ","M","V","Đ","M","B","Đ","M","V","Đ","M","B"],
   "Phá Quân":["M","B","Đ","H","V","H","M","B","H","H","V","H"],
+};
+
+// === Bảng Miếu Vượng — phái TQ (Tử Vi Đẩu Số Toàn Thư — Trần Đoàn) ===
+// Khác VN ở vài sao: Tử Vi không có Hãm, Phá Quân Thân = Đắc, etc.
+export const MIEU_VUONG_TQ = {
+  //          Tí, Sửu, Dần, Mão, Thìn, Tỵ, Ngọ, Mùi, Thân, Dậu, Tuất, Hợi
+  "Tử Vi":   ["V","B","V","B","Đ","B","M","B","V","B","Đ","B"],
+  "Thiên Cơ":["V","B","Đ","M","V","B","V","B","Đ","M","V","B"],
+  "Thái Dương":["H","Đ","V","V","V","M","M","Đ","B","H","H","H"],
+  "Vũ Khúc": ["Đ","M","V","H","M","B","Đ","M","V","H","M","B"],
+  "Thiên Đồng":["Đ","B","Đ","V","H","M","H","B","V","B","H","M"],
+  "Liêm Trinh":["H","B","M","V","B","H","Đ","B","M","V","B","H"],
+  "Thiên Phủ":["Đ","V","M","B","V","B","Đ","V","M","B","V","B"],
+  "Thái Âm": ["M","V","H","H","H","H","H","B","Đ","V","V","M"],
+  "Tham Lang":["Đ","M","V","B","M","B","Đ","M","V","B","M","B"],
+  "Cự Môn":  ["V","B","V","M","Đ","H","V","B","V","M","Đ","H"],
+  "Thiên Tướng":["Đ","Đ","V","B","M","B","V","Đ","V","B","M","B"],
+  "Thiên Lương":["M","V","M","Đ","B","H","M","V","M","Đ","B","H"],
+  "Thất Sát":["V","M","V","Đ","M","B","V","M","V","Đ","M","B"],
+  "Phá Quân":["M","B","Đ","H","V","H","M","B","Đ","H","V","H"],
+};
+
+// Lookup helper
+export const MIEU_VUONG_TABLES = {
+  "vn": MIEU_VUONG_VN,
+  "tq": MIEU_VUONG_TQ,
+};
+export const MIEU_VUONG_LABELS = {
+  "vn": "Vũ Tài Lộc (Tử Vi Đẩu Số Tân Biên)",
+  "tq": "Tử Vi Đẩu Số Toàn Thư (Trần Đoàn)",
 };
 
 // ============================================================
