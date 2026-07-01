@@ -2,6 +2,7 @@
 
 import { duongToAm, tinhChiGio, tinhCanChiGio, isDaiHanThuan, resolveBirthDateTime, DEFAULT_TZ } from './lunar.js';
 import { anCungMenh, anCungThan, an12Cung, anCanCung, tinhThanCu } from './cung.js';
+import { anLuuNguyet } from './luu_nguyet.js';
 import { anCuc, getCucInfo, getMenhChu, getThanChu } from './menh_than_cuc.js';
 import { an14ChinhTinh, groupChinhTinhByCung, detectCachCuc } from './chinh_tinh.js';
 import { anToanBoPhuTinh, groupPhuTinhByCung } from './phu_tinh.js';
@@ -29,7 +30,7 @@ const LUC_SAT = new Set(["Kình Dương", "Đà La", "Hoả Tinh", "Linh Tinh", 
  */
 export function buildChart(input) {
   const phai = input.phai || "vn";
-  const bangMieuVuong = input.bangMieuVuong || "vn";   // "vn" | "tq" — bảng Miếu Vượng
+  const bangMieuVuong = input.bangMieuVuong || "trungchau";   // "trungchau" | "vn" | "tq" — phái chính thức Trung Châu (2026-05-07)
   const timeZone = input.timeZone ?? DEFAULT_TZ;
   const foreignSchool = input.foreignSchool || "vn";   // "vn" | "local"
 
@@ -147,6 +148,12 @@ export function buildChart(input) {
     isTieuHan: tieuHan.chiIdx === c.chiIdx,
   }));
 
+  // 14. Lưu Nguyệt (12 tháng năm xem) — Đẩu Quân + Tứ Hoá lưu nguyệt
+  const luuNguyet = anLuuNguyet({
+    canNamXem: canChiNamXem.can, chiNamXem: canChiNamXem.chi,
+    thangSinhAm: thangAm, chiGio, viTriSao, cung12, phai,
+  });
+
   return {
     version: 1,
     createdAt: new Date().toISOString(),
@@ -198,6 +205,7 @@ export function buildChart(input) {
       canChi: canChiNamXem,
       ...luuNien,
     },
+    luuNguyet,
     tuVan,
   };
 }
