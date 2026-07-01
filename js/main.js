@@ -293,6 +293,14 @@ btnAnalyzeGo.addEventListener("click", async () => {
   if (!state.currentChart) return;
   const label = analyzeLabel.value.trim() || "ẩn danh";
 
+  // Lá số đã lưu (snapshot cũ) có thể thiếu field mới của engine (vd luuNguyet).
+  // → Dựng lại từ input đã lưu để luôn đầy đủ theo engine hiện tại.
+  let chart = state.currentChart;
+  if (!chart.luuNguyet && chart.input) {
+    try { chart = buildChart(chart.input); state.currentChart = chart; }
+    catch (e) { console.warn("Rebuild chart failed, dùng snapshot cũ:", e); }
+  }
+
   btnAnalyzeGo.disabled = true;
   btnAnalyzeGo.textContent = "⏳ Đang phân tích…";
   analyzeStatus.classList.remove("hidden");
@@ -303,7 +311,7 @@ btnAnalyzeGo.addEventListener("click", async () => {
     const resp = await fetch(`${API_URL}/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chart: state.currentChart, label }),
+      body: JSON.stringify({ chart, label }),
     });
     const kickoff = await resp.json();
     if (!resp.ok || !kickoff.jobId) {
