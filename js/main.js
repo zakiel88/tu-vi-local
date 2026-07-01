@@ -1,6 +1,6 @@
 // main.js — Entry point: bind events, gọi engine, render chart, save/load.
 
-import { buildChart } from './engine.js';
+import { buildChart } from './engine.js?v=20260702a';
 import { renderChart, renderMeta, renderCungDetail } from './render.js';
 import { exportPNG, exportJSON, exportMarkdown, defaultFilename } from './save.js';
 import { saveChart, listCharts, loadChart, deleteChart, renameChart } from './storage.js';
@@ -138,7 +138,7 @@ function readForm() {
     laiNhanCung: $("#in-lai-nhan").value || null,
     timeZone: parseFloat($("#in-timezone").value || "7"),
     foreignSchool: foreignSchoolEl?.value || "vn",
-    bangMieuVuong: bangMieuVuongEl?.value || "vn",
+    bangMieuVuong: bangMieuVuongEl?.value || "trungchau",
   };
 }
 

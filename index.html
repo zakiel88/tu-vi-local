@@ -7,9 +7,9 @@
   <meta name="theme-color" content="#303a52" />
   <title>Tử Vi Local — Lập lá số tại nhà</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23303a52'/%3E%3Ctext x='16' y='22' font-family='serif' font-size='18' font-weight='700' fill='%23b03020' text-anchor='middle'%3E紫%3C/text%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="css/tokens.css?v=20260507a" />
-  <link rel="stylesheet" href="css/ui.css?v=20260507a" />
-  <link rel="stylesheet" href="css/chart.css?v=20260507a" />
+  <link rel="stylesheet" href="css/tokens.css?v=20260616a" />
+  <link rel="stylesheet" href="css/ui.css?v=20260616a" />
+  <link rel="stylesheet" href="css/chart.css?v=20260616a" />
 </head>
 <body>
   <header class="app-header">
@@ -18,6 +18,8 @@
       <span class="brand-name">Tử Vi Local</span>
       <span class="brand-tag">Phái VN · Offline</span>
     </div>
+    <!-- Kỳ Môn tab ẩn từ 2026-06-16 — giữ file V9 + tabs.js + vault notes intact để khôi phục sau.
+         Khôi phục: uncomment <nav class="tab-nav">, <section id="panel-kymon">, <script src="js/tabs.js"> -->
     <div class="header-actions">
       <button id="btn-saved" class="btn btn-ghost" aria-label="Danh sách lá số đã lưu" title="Danh sách lá số đã lưu (Ctrl+L)"><span aria-hidden="true">📂</span> Đã lưu</button>
       <button id="btn-settings" class="btn btn-ghost" aria-label="Tuỳ chọn cài đặt" title="Cài đặt"><span aria-hidden="true">⚙</span> Cài đặt</button>
@@ -139,7 +141,7 @@
       <div class="chart-toolbar">
         <h2 class="panel-title">Lá số</h2>
         <div class="toolbar-actions">
-          <button id="btn-analyze" class="btn btn-primary" disabled aria-label="Phân tích thành Case Study qua Claude" title="Spawn Claude → viết case study Mệnh 2.0 vào vault"><span aria-hidden="true">📚</span> Phân tích → CS</button>
+          <button id="btn-analyze" class="btn btn-primary" disabled aria-label="Phân tích thành Case Study qua Claude" title="Spawn Claude → viết case study v3.0 Trung Châu vào vault"><span aria-hidden="true">📚</span> Phân tích → CS</button>
           <button id="btn-toggle-compact" class="btn btn-ghost" disabled aria-pressed="false" title="Chế độ Gọn — chỉ hiện chính tinh + cát/sát + Hoá">⊟ Gọn</button>
           <button id="btn-save-chart" class="btn btn-ghost" disabled aria-label="Lưu lá số vào IndexedDB" title="Lưu lá số (Ctrl+S)"><span aria-hidden="true">💾</span> Lưu</button>
           <button id="btn-print" class="btn btn-ghost" disabled aria-label="In A4"><span aria-hidden="true">🖨</span> In A4</button>
@@ -163,6 +165,8 @@
     </section>
   </main>
 
+  <!-- Tab Kỳ Môn Ngày ẩn từ 2026-06-16. File V9 tại preview/kymon-day-v9.html giữ intact. -->
+
   <!-- Modal: Analyze -->
   <div id="modal-analyze" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-content">
@@ -171,7 +175,7 @@
       <div id="analyze-body">
         <p>Service sẽ:</p>
         <ol style="font-size: 13px; line-height: 1.7;">
-          <li>Spawn Claude với chart JSON + framework Mệnh 2.0</li>
+          <li>Spawn Claude với chart JSON + Quy Trình v3.0 (Trung Châu Tam Hợp + Tân Biên VN)</li>
           <li>Claude đọc vault docs + viết case study đầy đủ</li>
           <li>Lưu file vào <code>vault/01-Lộ Trình Học/Case Studies/CS-XXX.md</code></li>
         </ol>
@@ -216,11 +220,13 @@
       <div class="settings-grid">
         <fieldset class="field-radio" style="grid-column:1/-1">
           <legend>Bảng Miếu Vượng</legend>
-          <label><input type="radio" name="bangMieuVuong" value="vn" checked /> <strong>VN — Vũ Tài Lộc</strong> (Tử Vi Đẩu Số Tân Biên 1992 — phổ biến nhất)</label>
+          <label><input type="radio" name="bangMieuVuong" value="trungchau" checked /> <strong>Trung Châu — Vương Đình Chi ⭐</strong> (Tam Hợp Phái, Nguyễn Anh Vũ dịch 2012 — phái chính thức)</label>
+          <br />
+          <label><input type="radio" name="bangMieuVuong" value="vn" /> <strong>VN — Vân Đằng Thái Thứ Lang</strong> (Tử Vi Đẩu Số Tân Biên 1956)</label>
           <br />
           <label><input type="radio" name="bangMieuVuong" value="tq" /> <strong>TQ — Tử Vi Đẩu Số Toàn Thư</strong> (Trần Đoàn — bản gốc)</label>
           <p style="font-size:11px;color:var(--color-ink-mute);margin:4px 0 0">
-            Các tác giả VN có dị biệt nhỏ ở vài sao. Lập lá số xong sẽ áp dụng bảng đã chọn.
+            Phái chính thức: Trung Châu Vương Đình Chi (chốt 2026-05-07). VN + TQ giữ làm reference đối chiếu.
           </p>
         </fieldset>
         <fieldset class="field-radio" style="grid-column:1/-1">
@@ -248,6 +254,7 @@
     </div>
   </div>
 
-  <script type="module" src="js/main.js?v=20260507a"></script>
+  <script type="module" src="js/main.js?v=20260702a"></script>
+  <!-- <script src="js/tabs.js"></script> — ẩn từ 2026-06-16 -->
 </body>
 </html>
