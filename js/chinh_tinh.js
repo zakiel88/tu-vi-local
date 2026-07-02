@@ -3,7 +3,7 @@
 import {
   CHI, CHI_INDEX,
   BO_TU_VI, BO_THIEN_PHU, CHINH_TINH_14,
-  CUC_INFO, MIEU_VUONG_VN, MIEU_VUONG_TABLES, CACH_CUC_DOI,
+  CUC_INFO, MIEU_VUONG_TRUNG_CHAU, MIEU_VUONG_VN, MIEU_VUONG_TABLES, CACH_CUC_DOI,
 } from './data.js';
 
 /**
@@ -85,21 +85,21 @@ export function an14ChinhTinh(cuc, ngayAm) {
  * Tính Miếu Vượng cho 1 sao tại 1 chi.
  * @param {string} sao
  * @param {number} chiIdx
- * @param {string} bang  "vn" | "tq" — bảng Miếu Vượng (default "vn" = Vũ Tài Lộc)
+ * @param {string} bang  "trungchau" | "vn" | "tq" — default "trungchau" (Vương Đình Chi, phái chính thức từ 2026-05-07)
  * @returns {string} M / V / Đ / B / H
  */
-export function tinhMieuVuong(sao, chiIdx, bang = "vn") {
-  const table = MIEU_VUONG_TABLES[bang] || MIEU_VUONG_VN;
+export function tinhMieuVuong(sao, chiIdx, bang = "trungchau") {
+  const table = MIEU_VUONG_TABLES[bang] || MIEU_VUONG_TRUNG_CHAU;
   return table[sao]?.[chiIdx] || "-";
 }
 
 /**
  * Group 14 chính tinh theo cung + miếu vượng.
  * @param {Object<sao, chiIdx>} chinhTinh
- * @param {string} bang  bảng Miếu Vượng
+ * @param {string} bang  bảng Miếu Vượng (default "trungchau")
  * @returns {Object<chiIdx, Array<{sao, mieuVuong}>>}
  */
-export function groupChinhTinhByCung(chinhTinh, bang = "vn") {
+export function groupChinhTinhByCung(chinhTinh, bang = "trungchau") {
   const result = {};
   for (let i = 0; i < 12; i++) result[i] = [];
   for (const [sao, chiIdx] of Object.entries(chinhTinh)) {

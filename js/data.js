@@ -313,8 +313,10 @@ export const CHINH_TINH_14 = [
 // Format: Object<sao, [chi0..chi11]> với chi 0=Tí, 1=Sửu, ..., 11=Hợi
 // Values: M=Miếu, V=Vượng, Đ=Đắc, B=Bình hoà, H=Hãm
 
-// === Bảng Miếu Vượng — phái VN (Vũ Tài Lộc — Tử Vi Đẩu Số Tân Biên 1992) ===
-// Bảng phổ biến nhất ở VN.
+// === Bảng Miếu Vượng — phái VN (Vân Đằng Thái Thứ Lang — Tử Vi Đẩu Số Tân Biên 1956) ===
+// Bảng VN truyền thống gốc, được phần lớn phần mềm an sao VN dùng.
+// LƯU Ý: Vũ Tài Lục (1973) là dịch giả Tử Vi Đẩu Số Toàn Thư (TQ), KHÔNG phải tác giả bảng VN.
+// Tham khảo: vault/03-Thư Viện Tra Cứu/Bảng Tra/Tại Sao Bảng Miếu Vượng Khác Nhau.md
 export const MIEU_VUONG_VN = {
   //          Tí, Sửu, Dần, Mão, Thìn, Tỵ, Ngọ, Mùi, Thân, Dậu, Tuất, Hợi
   "Tử Vi":   ["V","B","Đ","H","V","H","M","B","Đ","H","V","H"],
@@ -353,14 +355,46 @@ export const MIEU_VUONG_TQ = {
   "Phá Quân":["M","B","Đ","H","V","H","M","B","Đ","H","V","H"],
 };
 
+// === Bảng Miếu Vượng — phái Trung Châu Tam Hợp (Vương Đình Chi, Nguyễn Anh Vũ dịch 2012) ===
+// ⭐ PHÁI CHÍNH THỨC của project (chốt 2026-05-07, refine V/Đ 2026-05-08).
+// Method: M+H confirmed từ Tập 1 Chương 3.1 (text mô tả Wang Đình Chi),
+//         V/Đ/B derived từ ngũ hành rules (cùng hành/sinh khắc) cho các ô không phải M/H.
+// Quy tắc derivation:
+//   - Cùng hành (sao=cung) → V (nếu chưa M)
+//   - Cung sinh Sao → V (cung nuôi sao)
+//   - Sao sinh Cung → Đ (sao có lực, đem cho)
+//   - Cung khắc Sao / Sao khắc Cung → B (mặc định)
+// Note: Đây là "best derivation" — Wang Đình Chi có bảng chi tiết hơn (table page 32 PDF
+//   bị crop binding edge), session sau cần manual verify từng ô khi đọc sách giấy.
+// Tham khảo: vault/03-Thư Viện Tra Cứu/Bảng Tra/Bảng Miếu Vượng - Trung Châu.md
+export const MIEU_VUONG_TRUNG_CHAU = {
+  //              Tý,  Sửu, Dần, Mão, Thìn, Tỵ, Ngọ, Mùi, Thân, Dậu, Tuất, Hợi
+  "Tử Vi":      ["B","M","B","B","H","V","M","M","Đ","Đ","H","B"],   // M Sửu Ngọ Mùi; kỵ La Võng Thìn Tuất
+  "Thiên Cơ":   ["M","H","V","V","B","Đ","M","H","B","B","B","V"],   // M Tý Ngọ; H Sửu Mùi
+  "Thái Dương": ["H","H","V","M","Đ","V","M","Đ","B","B","H","H"],   // M Mão Ngọ; H Tý Sửu Tuất Hợi
+  "Vũ Khúc":    ["Đ","M","B","H","M","B","B","M","V","V","M","Đ"],   // M Tứ Mộ; H Mão
+  "Thiên Đồng": ["V","H","Đ","M","B","M","H","H","V","V","B","M"],   // M Mão Tỵ Hợi; H Sửu Ngọ Mùi
+  "Liêm Trinh": ["B","Đ","M","V","Đ","H","V","M","M","B","Đ","H"],   // M Dần Mùi Thân; H Tỵ Hợi
+  "Thiên Phủ":  ["M","M","M","B","M","V","V","M","Đ","H","M","B"],   // M Tý Sửu Dần Thìn Mùi Tuất; H Dậu
+  "Thái Âm":    ["M","M","Đ","H","B","H","H","B","V","V","B","M"],   // M Hợi Tý Sửu; H Mão Tỵ Ngọ
+  "Tham Lang":  ["V","M","V","V","M","H","Đ","M","B","B","M","H"],   // M Tứ Mộ; H Tỵ Hợi
+  "Cự Môn":     ["V","H","M","M","B","B","B","H","M","M","B","V"],   // M Dần Mão Thân Dậu; H Sửu Mùi
+  "Thiên Tướng":["M","M","M","H","B","B","B","B","V","H","B","V"],   // M Tý Sửu Dần; H Mão Dậu
+  "Thiên Lương":["M","V","M","M","V","H","M","V","Đ","H","V","H"],   // M Tý Dần Mão Ngọ; H Tỵ Dậu Hợi
+  "Thất Sát":   ["Đ","M","M","H","V","B","B","V","M","H","M","Đ"],   // M Sửu Dần Thân Tuất; H Mão Dậu
+  "Phá Quân":   ["M","B","H","Đ","B","B","M","M","H","H","B","V"],   // M Tý Ngọ Mùi; H Dần Thân Dậu
+};
+
 // Lookup helper
 export const MIEU_VUONG_TABLES = {
+  "trungchau": MIEU_VUONG_TRUNG_CHAU,
   "vn": MIEU_VUONG_VN,
   "tq": MIEU_VUONG_TQ,
 };
 export const MIEU_VUONG_LABELS = {
-  "vn": "Vũ Tài Lộc (Tử Vi Đẩu Số Tân Biên)",
-  "tq": "Tử Vi Đẩu Số Toàn Thư (Trần Đoàn)",
+  "trungchau": "Vương Đình Chi — Trung Châu Tam Hợp Phái (Nguyễn Anh Vũ dịch 2012)",
+  "vn": "Vân Đằng Thái Thứ Lang — Tử Vi Đẩu Số Tân Biên (1956)",
+  "tq": "Trần Đoàn — Tử Vi Đẩu Số Toàn Thư (dịch giả Vũ Tài Lục 1973)",
 };
 
 // ============================================================

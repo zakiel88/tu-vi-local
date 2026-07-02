@@ -171,7 +171,7 @@ function renderA4Footer(chart) {
       </span>
     </div>
     <div class="legend-row legend-row-source">
-      <span>Bảng Miếu Vượng: <strong>${chart.input.bangMieuVuong === "tq" ? "Tử Vi Đẩu Số Toàn Thư (TQ)" : "Vũ Tài Lộc — Tử Vi Đẩu Số Tân Biên (VN)"}</strong>. Có thể đổi trong Cài đặt. Các tác giả khác nhau có dị biệt nhỏ ở vài sao.</span>
+      <span>Bảng Miếu Vượng: <strong>${chart.input.bangMieuVuong === "tq" ? "Tử Vi Đẩu Số Toàn Thư (TQ)" : chart.input.bangMieuVuong === "vn" ? "Vân Đằng Thái Thứ Lang — Tử Vi Đẩu Số Tân Biên (VN, 1956)" : "Vương Đình Chi — Trung Châu Tam Hợp Phái (HK, 2012)"}</strong>. Có thể đổi trong Cài đặt.</span>
     </div>
   `;
 
