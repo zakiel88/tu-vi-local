@@ -1,0 +1,15 @@
+/* Safe-area cho thiết bị có notch / home-indicator (iOS Capacitor).
+   Trên web/desktop env() = 0 → không đổi layout. Cần <meta viewport-fit=cover>. */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+body {
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+  box-sizing: border-box;
+}

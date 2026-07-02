@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="Lập lá số Tử Vi phái VN — chạy offline, lưu IndexedDB, xuất PNG/A4/JSON/MD" />
   <meta name="theme-color" content="#303a52" />
   <title>Tử Vi Local — Lập lá số tại nhà</title>
@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/tokens.css?v=20260616a" />
   <link rel="stylesheet" href="css/ui.css?v=20260616a" />
   <link rel="stylesheet" href="css/chart.css?v=20260616a" />
+  <link rel="stylesheet" href="css/safe-area.css?v=20260702a" />
 </head>
 <body>
   <header class="app-header">
@@ -18,8 +19,6 @@
       <span class="brand-name">Tử Vi Local</span>
       <span class="brand-tag">Phái VN · Offline</span>
     </div>
-    <!-- Kỳ Môn tab ẩn từ 2026-06-16 — giữ file V9 + tabs.js + vault notes intact để khôi phục sau.
-         Khôi phục: uncomment <nav class="tab-nav">, <section id="panel-kymon">, <script src="js/tabs.js"> -->
     <div class="header-actions">
       <button id="btn-saved" class="btn btn-ghost" aria-label="Danh sách lá số đã lưu" title="Danh sách lá số đã lưu (Ctrl+L)"><span aria-hidden="true">📂</span> Đã lưu</button>
       <button id="btn-settings" class="btn btn-ghost" aria-label="Tuỳ chọn cài đặt" title="Cài đặt"><span aria-hidden="true">⚙</span> Cài đặt</button>
@@ -165,8 +164,6 @@
     </section>
   </main>
 
-  <!-- Tab Kỳ Môn Ngày ẩn từ 2026-06-16. File V9 tại preview/kymon-day-v9.html giữ intact. -->
-
   <!-- Modal: Analyze -->
   <div id="modal-analyze" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-content">
@@ -255,6 +252,5 @@
   </div>
 
   <script type="module" src="js/main.js?v=20260702b"></script>
-  <!-- <script src="js/tabs.js"></script> — ẩn từ 2026-06-16 -->
 </body>
 </html>
