@@ -1,10 +1,11 @@
 // save.js — Export chart sang PNG / JSON / Markdown.
 //
-// PNG: dùng html2canvas (lazy-load từ CDN; cache sau lần đầu).
+// PNG: dùng html2canvas (lazy-load LOCAL trước — offline + iOS bundle; CDN chỉ fallback web).
 // JSON: export full chart object.
 // Markdown: render text-friendly summary.
 
-const HTML2CANVAS_URL = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+const HTML2CANVAS_LOCAL = "js/vendor/html2canvas.min.js";
+const HTML2CANVAS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
 
 const HOA_LABEL = { loc: "Lộc", quyen: "Quyền", khoa: "Khoa", ky: "Kỵ" };
 
@@ -19,16 +20,22 @@ function downloadBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-async function loadHtml2Canvas() {
-  if (window.html2canvas) return window.html2canvas;
+function loadScript(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement("script");
-    s.src = HTML2CANVAS_URL;
-    s.crossOrigin = "anonymous";
-    s.onload = () => resolve(window.html2canvas);
-    s.onerror = () => reject(new Error("Không tải được html2canvas (cần internet lần đầu)."));
+    s.src = src;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("load fail: " + src));
     document.head.appendChild(s);
   });
+}
+
+async function loadHtml2Canvas() {
+  if (window.html2canvas) return window.html2canvas;
+  try { await loadScript(HTML2CANVAS_LOCAL); }
+  catch { await loadScript(HTML2CANVAS_CDN); }
+  if (!window.html2canvas) throw new Error("Không tải được html2canvas.");
+  return window.html2canvas;
 }
 
 /**
@@ -50,6 +57,11 @@ export async function exportPNG(container, filename) {
     windowHeight: container.scrollHeight,
   });
   container.style.transform = prevTransform;
+  if (window.TuViNative?.isNative) {
+    const dataUrl = canvas.toDataURL("image/png");
+    await window.TuViNative.sharePNGDataUrl(dataUrl, filename);
+    return;
+  }
   canvas.toBlob((blob) => {
     if (blob) downloadBlob(blob, filename);
   }, "image/png");
@@ -59,6 +71,9 @@ export async function exportPNG(container, filename) {
  * Export chart object ra JSON file.
  */
 export function exportJSON(chart, filename) {
+  if (window.TuViNative?.isNative) {
+    return window.TuViNative.shareText(JSON.stringify(chart, null, 2), filename);
+  }
   const blob = new Blob([JSON.stringify(chart, null, 2)], { type: "application/json" });
   downloadBlob(blob, filename);
 }
@@ -68,6 +83,9 @@ export function exportJSON(chart, filename) {
  */
 export function exportMarkdown(chart, filename) {
   const md = renderMarkdown(chart);
+  if (window.TuViNative?.isNative) {
+    return window.TuViNative.shareText(md, filename);
+  }
   const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
   downloadBlob(blob, filename);
 }

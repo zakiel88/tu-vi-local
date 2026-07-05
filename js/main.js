@@ -156,6 +156,7 @@ function buildAndRender() {
       const chart = buildChart(input);
       state.currentChart = chart;
       renderCurrent();
+      window.TuViNative?.hapticMedium();
 
       chartMeta.classList.remove("hidden");
       renderMeta(metaList, chart);
@@ -531,6 +532,9 @@ document.querySelectorAll('input[name="bangMieuVuong"]').forEach(el => {
     if (state.currentChart) buildAndRender();
   });
 });
+
+// Native: WKWebView không hỗ trợ window.print → ẩn nút In
+if (window.TuViNative?.isNative && btnPrint) btnPrint.style.display = "none";
 
 // ============================================================
 // Helpers
