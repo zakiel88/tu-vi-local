@@ -25,5 +25,11 @@
     async hapticMedium() {
       try { if (isNative) await P("Haptics").impact({ style: "MEDIUM" }); } catch {}
     },
+    async hapticLight() {
+      try { if (isNative) await P("Haptics").impact({ style: "LIGHT" }); } catch {}
+    },
+    async hapticSelection() {
+      try { if (isNative) await P("Haptics").selectionStart(); } catch {}
+    },
   };
 })();
