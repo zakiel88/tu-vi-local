@@ -5,6 +5,7 @@ import { buildChart } from './engine.js';
 import { createDatePicker } from './app-picker.js';
 import { renderChart } from './app-chart.js';
 import { exportPNG, exportMarkdown } from './save.js';
+import { saveChart, listCharts, loadChart, deleteChart } from './storage.js';
 
 const $ = (id) => document.getElementById(id);
 const nowYear = new Date().getFullYear();
@@ -20,16 +21,13 @@ const tabs = Array.from(document.querySelectorAll('.tab'));
 function showView(id) {
   for (const v of document.querySelectorAll('.view')) v.classList.toggle('active', v.id === id);
   for (const t of tabs) t.setAttribute('aria-selected', String(t.dataset.view === id));
+  if (id === 'view-saved') refreshSaved();
 }
 tabs.forEach((t) => t.addEventListener('click', () => {
   if (t.disabled) return;
   window.TuViNative?.hapticLight?.();
   showView(t.dataset.view);
 }));
-function setChartTabEnabled(on) {
-  const t = tabs.find((x) => x.dataset.view === 'view-chart');
-  // luôn cho vào tab lá số; nếu chưa có thì hiện empty
-}
 
 // ---------- Form: gender ----------
 $('f-gioi').addEventListener('click', (e) => {
@@ -82,13 +80,77 @@ function renderCurrentChart() {
 
   $('chart-empty').hidden = true;
   $('chart-wrap').hidden = false;
-  $('timebar').hidden = false;
+  $('modebar').hidden = false;
   $('chart-tools').hidden = false;
 
+  // reset trạng thái nút Lưu + view mode
+  state.savedId = null;
+  const sb = $('btn-save');
+  sb.classList.remove('saved'); sb.innerHTML = '<span>☆</span> Lưu';
+  for (const b of $('viewmode').querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.mode === 'grid'));
+
   state.chartApi = renderChart($('chart'), chart, {
-    onOpenLuan: () => { /* M3: mở luận giải cung */ showView('view-luan'); },
+    onOpenLuan: () => showView('view-luan'),
   });
 }
+
+// ---------- View mode (grid / list) ----------
+$('viewmode').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  for (const btn of $('viewmode').querySelectorAll('button')) btn.setAttribute('aria-pressed', String(btn === b));
+  state.chartApi?.setMode(b.dataset.mode);
+  window.TuViNative?.hapticSelection?.();
+});
+
+// ---------- Save chart to device ----------
+$('btn-save').addEventListener('click', async () => {
+  if (!state.chart || state.savedId) return;
+  const i = state.input;
+  const label = i.ten || `${i.gioiTinh === 'nam' ? 'Nam' : 'Nữ'} ${i.ngay}/${i.thang}/${i.nam}`;
+  try {
+    state.savedId = await saveChart(state.chart, label);
+    const sb = $('btn-save');
+    sb.classList.add('saved'); sb.innerHTML = '<span>★</span> Đã lưu';
+    window.TuViNative?.hapticMedium?.();
+  } catch (e) { alert('Không lưu được: ' + (e?.message || e)); }
+});
+
+// ---------- Saved tab ----------
+async function refreshSaved() {
+  let records = [];
+  try { records = await listCharts(); } catch { records = []; }
+  const listEl = $('saved-list');
+  $('saved-empty').hidden = records.length > 0;
+  listEl.innerHTML = records.map((r) => {
+    const d = new Date(r.savedAt);
+    const when = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+    const cuc = r.chart?.menh?.cuc ? r.chart.menh.cuc + ' Cục' : '';
+    const gioi = r.input?.gioiTinh === 'nam' ? 'Nam' : 'Nữ';
+    return `<div class="scard"><button class="info" data-id="${r.id}"><div class="t">${escAttr(r.label)}</div><div class="m">${gioi} · lưu ${when}${cuc ? ' · ' + escAttr(cuc) : ''}</div></button><button class="del" data-del="${r.id}">Xoá</button></div>`;
+  }).join('');
+}
+$('saved-list').addEventListener('click', async (e) => {
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    if (!confirm('Xoá lá số này?')) return;
+    await deleteChart(Number(del.dataset.del));
+    refreshSaved();
+    return;
+  }
+  const info = e.target.closest('[data-id]');
+  if (info) {
+    const rec = await loadChart(Number(info.dataset.id));
+    if (!rec?.chart) return;
+    state.chart = rec.chart;
+    if (rec.input) Object.assign(state.input, rec.input);
+    renderCurrentChart();
+    state.savedId = Number(info.dataset.id);
+    const sb = $('btn-save'); sb.classList.add('saved'); sb.innerHTML = '<span>★</span> Đã lưu';
+    window.TuViNative?.hapticLight?.();
+    showView('view-chart');
+  }
+});
+const escAttr = (s) => String(s).replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
 
 // ---------- Share ----------
 $('btn-share-png').addEventListener('click', async () => {

@@ -13,7 +13,23 @@ const MV_GOOD = new Set(['M', 'V', 'Đ']);
 const HOA_HAN = { loc: 'Lộc', quyen: 'Quyền', khoa: 'Khoa', ky: 'Kỵ' };
 const HOA_HAN_CHAR = { loc: '祿', quyen: '權', khoa: '科', ky: '忌' };
 
+const CUNG_ORDER = ['Mệnh', 'Phụ Mẫu', 'Phúc Đức', 'Điền Trạch', 'Quan Lộc', 'Nô Bộc', 'Thiên Di', 'Tật Ách', 'Tài Bạch', 'Tử Tức', 'Phu Thê', 'Huynh Đệ'];
+
+// Đóng sheet của lần render hiện tại (drag-to-dismiss bind 1 lần, gọi qua đây).
+let activeClose = null;
+
 const esc = (s) => String(s).replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+
+function starHtml(cung, small) {
+  const chinh = cung.chinhTinh || [];
+  if (!chinh.length) return `<span class="vcd">Vô chính diệu</span>`;
+  return chinh.map((s) => {
+    const k = hoaOf(cung, s.sao);
+    const mut = k ? `<span class="mut ${k}">${HOA_HAN_CHAR[k]}</span>` : '';
+    const mv = s.mieuVuong ? `<span class="mv">${esc(s.mieuVuong)}</span>` : '';
+    return `<span class="st">${esc(s.sao)}${mv}${mut}</span>`;
+  }).join('');
+}
 
 function hoaOf(cung, sao) {
   const h = (cung.tuHoa || []).find((t) => t.sao === sao);
@@ -26,6 +42,7 @@ export function renderChart(root, chart, { onOpenLuan } = {}) {
   for (const c of chart.cung) cungByChi[c.chiIdx] = c;
 
   root.innerHTML = '';
+  root.className = 'chart mode-grid';
   const grid = document.createElement('div');
   grid.className = 'grid4';
 
@@ -74,6 +91,22 @@ export function renderChart(root, chart, { onOpenLuan } = {}) {
   svg.setAttribute('class', 'lines');
   root.appendChild(svg);
 
+  // ----- List view (chế độ danh sách cho người mới) -----
+  const list = document.createElement('div');
+  list.className = 'listview';
+  const ordered = [...chart.cung].sort((a, b) => CUNG_ORDER.indexOf(a.tenCung) - CUNG_ORDER.indexOf(b.tenCung));
+  for (const c of ordered) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'lcard' + (c.isMenh ? ' lc-menh' : '');
+    const tag = c.isMenh ? '<span class="tag menh">命</span>' : c.isThan ? '<span class="tag than">身</span>' : '';
+    const dh = c.daiHanRange ? `<span class="lc-dh">${esc(c.daiHanRange)}</span>` : '';
+    card.innerHTML = `<span class="lc-name"><span class="n">${tag}${esc(c.tenCung)}</span><span class="c">${esc(c.chi)}</span></span><span class="lc-stars">${starHtml(c)}</span>${dh}<span class="chev">›</span>`;
+    card.addEventListener('click', () => api.select(c.chiIdx));
+    list.appendChild(card);
+  }
+  root.appendChild(list);
+
   let selected = null;
 
   function centerOf(chiIdx) {
@@ -117,6 +150,13 @@ export function renderChart(root, chart, { onOpenLuan } = {}) {
       svg.innerHTML = '';
       for (const el of Object.values(cells)) el.classList.remove('hl', 'tri', 'dim', 'sel');
     },
+    setMode(mode) {
+      root.classList.toggle('mode-list', mode === 'list');
+      root.classList.toggle('mode-grid', mode !== 'list');
+      // đổi mode → bỏ chọn + đóng sheet (highlight lưới không áp dụng cho list)
+      if (mode === 'list') { closeSheet(); }
+      else if (selected != null) { requestAnimationFrame(() => drawLines(selected)); }
+    },
   };
 
   // ----- bottom sheet -----
@@ -128,6 +168,28 @@ export function renderChart(root, chart, { onOpenLuan } = {}) {
     sheet.classList.remove('on'); scrim.classList.remove('on'); api.clear();
   }
   scrim.onclick = closeSheet;
+  activeClose = closeSheet;
+
+  // drag-to-dismiss (bind 1 lần trên phần tử sheet dùng chung)
+  if (!sheet._dragBound) {
+    sheet._dragBound = true;
+    let sy = null, cur = 0;
+    sheet.addEventListener('touchstart', (e) => {
+      if (sheet.scrollTop > 0) { sy = null; return; }
+      sy = e.touches[0].clientY; cur = 0; sheet.classList.add('dragging');
+    }, { passive: true });
+    sheet.addEventListener('touchmove', (e) => {
+      if (sy == null) return;
+      const dy = e.touches[0].clientY - sy;
+      if (dy > 0) { cur = dy; sheet.style.transform = `translateY(${dy}px)`; }
+    }, { passive: true });
+    sheet.addEventListener('touchend', () => {
+      if (sy == null) return;
+      sheet.classList.remove('dragging'); sheet.style.transform = '';
+      if (cur > 90 && activeClose) activeClose();
+      sy = null; cur = 0;
+    });
+  }
 
   function openSheet(c) {
     const chinh = (c.chinhTinh || []);

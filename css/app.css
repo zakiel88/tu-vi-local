@@ -160,9 +160,37 @@ button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: tra
 .btn-ghost:active { background: var(--surface); }
 
 /* ============ Chart (Lá số) ============ */
-.timebar { display: flex; gap: 6px; padding: 4px 16px 10px; }
-.timebar button { flex: 1; border: 1px solid var(--hair); background: var(--surface); color: var(--text-dim); font-size: 12.5px; padding: 8px 0; border-radius: 10px; }
-.timebar button[aria-pressed="true"] { background: var(--surface-2); border-color: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.modebar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 2px 16px 10px; }
+.modebar .seg { flex: 0 1 auto; }
+.modebar .seg button { padding: 6px 12px; font-size: 13px; }
+.save-btn { display: inline-flex; align-items: center; gap: 5px; background: var(--surface); border: 1px solid var(--hair); color: var(--text-dim); font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 10px; }
+.save-btn span { color: var(--accent); font-size: 15px; }
+.save-btn.saved { color: var(--accent); border-color: var(--accent-soft); }
+.save-btn:active { background: var(--surface-2); }
+
+/* ---- list view ---- */
+.chart.mode-list .grid4, .chart.mode-list .lines { display: none; }
+.chart.mode-grid .listview { display: none; }
+.listview { display: flex; flex-direction: column; gap: 8px; }
+.lcard { display: flex; align-items: flex-start; gap: 12px; background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 12px 14px; text-align: left; width: 100%; position: relative; }
+.lcard:active { background: var(--surface-2); }
+.lcard.lc-menh { border-color: var(--accent-soft); }
+.lcard .lc-name { flex: 0 0 76px; }
+.lcard .lc-name .n { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 4px; }
+.lcard .lc-name .c { font-family: var(--han); font-size: 12px; color: var(--faint); margin-top: 2px; }
+.lcard .lc-stars { flex: 1 1 auto; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.lcard .lc-stars .st { font-family: var(--han); font-size: 15px; font-weight: 600; color: var(--text); }
+.lcard .lc-stars .st .mv { font-size: 9px; color: var(--faint); font-family: var(--ui); margin-left: 1px; }
+.lcard .lc-stars .vcd { font-family: var(--han); font-size: 13px; color: var(--faint); font-weight: 400; }
+.lcard .lc-dh { position: absolute; right: 12px; top: 12px; font-size: 9px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.lcard .chev { color: var(--faint); align-self: center; font-size: 16px; }
+
+/* ============ Saved list ============ */
+.scard { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--hair); border-radius: 14px; padding: 14px 15px; margin-bottom: 10px; }
+.scard .info { flex: 1 1 auto; min-width: 0; text-align: left; background: none; border: none; padding: 0; }
+.scard .info .t { font-family: var(--serif); font-size: 17px; font-weight: 600; color: var(--text); }
+.scard .info .m { font-size: 12.5px; color: var(--text-dim); margin-top: 2px; }
+.scard .del { flex: 0 0 auto; background: none; border: none; color: var(--cinnabar); font-size: 13px; padding: 6px 8px; }
 
 .chart-wrap { padding: 0 12px; }
 .chart { position: relative; }
@@ -238,4 +266,12 @@ button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: tra
 /* toolbar within chart view */
 .chart-tools { display: flex; gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
 
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* Landscape: giữ lá số vuông vừa trong chiều cao màn hình */
+@media (orientation: landscape) {
+  .chart-wrap { max-width: 76vh; margin: 0 auto; }
+  .lt h1 { font-size: 24px; }
+}
+
+.sheet.dragging { transition: none; }
+
+@media (prefers-reduced-motion: reduce) { *, .sheet { transition: none !important; } }

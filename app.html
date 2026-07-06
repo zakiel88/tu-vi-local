@@ -50,10 +50,12 @@
       <!-- ===== Lá số ===== -->
       <section class="view" id="view-chart" aria-label="Lá số">
         <div class="lt" id="chart-title"><h1>Lá số</h1><p>Chưa có lá số</p></div>
-        <div class="timebar" id="timebar" hidden>
-          <button type="button" data-mode="ban" aria-pressed="true">Bản mệnh</button>
-          <button type="button" data-mode="dai" aria-pressed="false">Đại vận</button>
-          <button type="button" data-mode="luu" aria-pressed="false">Lưu niên</button>
+        <div class="modebar" id="modebar" hidden>
+          <span class="seg" id="viewmode">
+            <button type="button" data-mode="grid" aria-pressed="true">▦ Lưới</button>
+            <button type="button" data-mode="list" aria-pressed="false">☰ Danh sách</button>
+          </span>
+          <button type="button" class="save-btn" id="btn-save"><span>☆</span> Lưu</button>
         </div>
         <div class="scroll" id="chart-scroll">
           <div class="empty" id="chart-empty">
@@ -65,8 +67,8 @@
           </div>
         </div>
         <div class="chart-tools" id="chart-tools" hidden>
-          <button class="btn-ghost" id="btn-share-png" style="flex:1;border-radius:12px">Lưu ảnh</button>
-          <button class="btn-ghost" id="btn-share-md" style="flex:1;border-radius:12px">Lưu văn bản</button>
+          <button class="btn-ghost" id="btn-share-png" style="flex:1;border-radius:12px">Ảnh PNG</button>
+          <button class="btn-ghost" id="btn-share-md" style="flex:1;border-radius:12px">Văn bản</button>
         </div>
         <!-- bottom sheet chi tiết cung -->
         <div class="scrim" id="scrim"></div>
