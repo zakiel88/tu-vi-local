@@ -56,6 +56,7 @@
 
 /* ============ Base + native-feel ============ */
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body {
   margin: 0; height: 100%;
   background: var(--bg); color: var(--text);
@@ -159,7 +160,11 @@ button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: tra
 .btn-ghost { background: transparent; border: 1px solid var(--hair); color: var(--text-dim); font-weight: 500; font-size: 14px; padding: 12px; }
 .btn-ghost:active { background: var(--surface); }
 
-/* ============ Chart (Lá số) ============ */
+/* ============ Chart (Lá số A4 + pinch-zoom) ============ */
+.chart-host { flex: 1 1 auto; overflow: hidden; position: relative; background: var(--surface-2); touch-action: none; }
+.chart-stage { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+.chart-stage .chart-container { background: #fff; }
+.zoom-hint { flex: 1 1 auto; font-size: 11px; color: var(--faint); }
 .modebar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 2px 16px 10px; }
 .modebar .seg { flex: 0 1 auto; }
 .modebar .seg button { padding: 6px 12px; font-size: 13px; }

@@ -3,8 +3,9 @@
 
 import { buildChart } from './engine.js';
 import { createDatePicker } from './app-picker.js';
-import { renderChart } from './app-chart.js';
-import { exportPNG, exportMarkdown } from './save.js';
+import { renderChart } from './render.js';        // bàn A4 đầy đủ như website
+import { createZoomPan } from './app-zoom.js';
+import { exportPNG } from './save.js';
 import { saveChart, listCharts, loadChart, deleteChart } from './storage.js';
 
 const $ = (id) => document.getElementById(id);
@@ -13,7 +14,8 @@ const nowYear = new Date().getFullYear();
 const state = {
   input: { ten: '', gioiTinh: 'nam', nam: 1990, thang: 1, ngay: 1, gio: 12, phut: 0, namXem: nowYear },
   chart: null,
-  chartApi: null,
+  zoom: null,
+  savedId: null,
 };
 
 // ---------- Tab navigation ----------
@@ -79,28 +81,23 @@ function renderCurrentChart() {
   $('chart-title').innerHTML = `<h1>${label}</h1><p>${i.gioiTinh === 'nam' ? 'Nam' : 'Nữ'} · ${i.ngay}/${i.thang}/${i.nam}${canChi ? ' · ' + canChi : ''} · ${chart.menh.cuc} Cục</p>`;
 
   $('chart-empty').hidden = true;
-  $('chart-wrap').hidden = false;
+  $('chart-host').hidden = false;
   $('modebar').hidden = false;
   $('chart-tools').hidden = false;
 
-  // reset trạng thái nút Lưu + view mode
+  // reset trạng thái nút Lưu
   state.savedId = null;
   const sb = $('btn-save');
   sb.classList.remove('saved'); sb.innerHTML = '<span>☆</span> Lưu';
-  for (const b of $('viewmode').querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.mode === 'grid'));
 
-  state.chartApi = renderChart($('chart'), chart, {
-    onOpenLuan: () => showView('view-luan'),
-  });
+  // Render bàn A4 đầy đủ (như website) rồi bọc pinch-zoom/pan
+  renderChart($('chart-container'), chart, { showVong: true, showLuu: true });
+  if (!state.zoom) state.zoom = createZoomPan($('chart-host'), $('chart-stage'));
+  requestAnimationFrame(() => state.zoom.fit());
 }
 
-// ---------- View mode (grid / list) ----------
-$('viewmode').addEventListener('click', (e) => {
-  const b = e.target.closest('button'); if (!b) return;
-  for (const btn of $('viewmode').querySelectorAll('button')) btn.setAttribute('aria-pressed', String(btn === b));
-  state.chartApi?.setMode(b.dataset.mode);
-  window.TuViNative?.hapticSelection?.();
-});
+// ---------- Nút "Vừa khít" (fit lại) ----------
+$('btn-fit').addEventListener('click', () => { state.zoom?.fit(); window.TuViNative?.hapticSelection?.(); });
 
 // ---------- Save chart to device ----------
 $('btn-save').addEventListener('click', async () => {
@@ -152,14 +149,10 @@ $('saved-list').addEventListener('click', async (e) => {
 });
 const escAttr = (s) => String(s).replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
 
-// ---------- Share ----------
+// ---------- Lưu ảnh (bàn A4 đầy đủ, độ phân giải cao) ----------
 $('btn-share-png').addEventListener('click', async () => {
   if (!state.chart) return;
-  try { await exportPNG($('chart'), fileBase() + '.png'); } catch (e) { alert('Lỗi lưu ảnh: ' + (e?.message || e)); }
-});
-$('btn-share-md').addEventListener('click', async () => {
-  if (!state.chart) return;
-  try { await exportMarkdown(state.chart, fileBase() + '.md'); } catch (e) { alert('Lỗi lưu văn bản: ' + (e?.message || e)); }
+  try { await exportPNG($('chart-container'), fileBase() + '.png'); } catch (e) { alert('Lỗi lưu ảnh: ' + (e?.message || e)); }
 });
 function fileBase() {
   const i = state.input;

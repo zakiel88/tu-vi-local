@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#F4EFE4" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#14110E" media="(prefers-color-scheme: dark)">
   <title>Tử Vi - Tri Mệnh</title>
+  <link rel="stylesheet" href="css/chart.css">
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -47,32 +48,24 @@
         </div>
       </section>
 
-      <!-- ===== Lá số ===== -->
+      <!-- ===== Lá số (bàn A4 đầy đủ, pinch-zoom) ===== -->
       <section class="view" id="view-chart" aria-label="Lá số">
         <div class="lt" id="chart-title"><h1>Lá số</h1><p>Chưa có lá số</p></div>
         <div class="modebar" id="modebar" hidden>
-          <span class="seg" id="viewmode">
-            <button type="button" data-mode="grid" aria-pressed="true">▦ Lưới</button>
-            <button type="button" data-mode="list" aria-pressed="false">☰ Danh sách</button>
-          </span>
+          <span class="zoom-hint">Chụm 2 ngón để phóng to · kéo để di chuyển</span>
+          <button type="button" class="save-btn" id="btn-fit">⤢ Vừa khít</button>
           <button type="button" class="save-btn" id="btn-save"><span>☆</span> Lưu</button>
         </div>
-        <div class="scroll" id="chart-scroll">
-          <div class="empty" id="chart-empty">
-            <div class="mark">紫微</div>
-            <p>Chưa có lá số. Sang tab <b>Lập số</b> để tạo một lá số mới.</p>
-          </div>
-          <div class="chart-wrap" id="chart-wrap" hidden>
-            <div class="chart" id="chart"></div>
-          </div>
+        <div class="empty" id="chart-empty">
+          <div class="mark">紫微</div>
+          <p>Chưa có lá số. Sang tab <b>Lập số</b> để tạo một lá số mới.</p>
+        </div>
+        <div class="chart-host" id="chart-host" hidden>
+          <div class="chart-stage" id="chart-stage"><div id="chart-container" class="chart-container"></div></div>
         </div>
         <div class="chart-tools" id="chart-tools" hidden>
-          <button class="btn-ghost" id="btn-share-png" style="flex:1;border-radius:12px">Ảnh PNG</button>
-          <button class="btn-ghost" id="btn-share-md" style="flex:1;border-radius:12px">Văn bản</button>
+          <button class="btn-ghost" id="btn-share-png" style="flex:1;border-radius:12px">Lưu ảnh</button>
         </div>
-        <!-- bottom sheet chi tiết cung -->
-        <div class="scrim" id="scrim"></div>
-        <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><div id="sheet-body"></div></div>
       </section>
 
       <!-- ===== Luận giải (placeholder M3) ===== -->
