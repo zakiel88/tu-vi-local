@@ -2,6 +2,7 @@
 
 import { categorizeStar } from './engine.js';
 import { CHI } from './data.js';
+import { saoNghia } from './sao_nghia.js';
 
 const POSITION_CLASS = {
   "Tí": "pos-ti", "Sửu": "pos-suu", "Dần": "pos-dan", "Mão": "pos-mao",
@@ -532,21 +533,27 @@ export function renderCungDetail(container, cung, chart) {
   }
 
   if (cung.chinhTinh.length > 0) {
-    const list = cung.chinhTinh.map(c => `${c.sao}${c.mieuVuong !== "-" ? " (" + c.mieuVuong + ")" : ""}`).join(" · ");
-    grid.appendChild(makeSection("Chính tinh", list));
+    grid.appendChild(makeStarSection("Chính tinh",
+      cung.chinhTinh.map(c => ({ name: c.sao, mv: c.mieuVuong }))));
   }
 
   // Phụ tinh phân loại
   const cat = cung.phuTinh.filter(s => categorizeStar(s) === "cat");
   const sat = cung.phuTinh.filter(s => categorizeStar(s) === "sat");
   const le = cung.phuTinh.filter(s => categorizeStar(s) === "le");
-  if (cat.length) grid.appendChild(makeSection("Lục cát", cat.join(" · ")));
-  if (sat.length) grid.appendChild(makeSection("Lục sát", sat.join(" · ")));
-  if (le.length) grid.appendChild(makeSection("Phụ tinh khác", le.join(" · ")));
+  if (cat.length) grid.appendChild(makeStarSection("Lục cát", cat.map(s => ({ name: s }))));
+  if (sat.length) grid.appendChild(makeStarSection("Lục sát", sat.map(s => ({ name: s }))));
+  if (le.length) grid.appendChild(makeStarSection("Phụ tinh khác", le.map(s => ({ name: s }))));
+
+  // Tuần/Triệt — nếu án ngữ, hiện nghĩa (án khí sao trong cung)
+  const anNgu = [];
+  if (cung.hasTuan) anNgu.push({ name: "Tuần" });
+  if (cung.hasTriet) anNgu.push({ name: "Triệt" });
+  if (anNgu.length) grid.appendChild(makeStarSection("Tuần / Triệt án ngữ", anNgu));
 
   if (cung.tuHoa.length > 0) {
-    const list = cung.tuHoa.map(h => `Hoá ${HOA_LABEL[h.kind]} ${h.sao}`).join(" · ");
-    grid.appendChild(makeSection("Tứ Hoá năm sinh", list));
+    grid.appendChild(makeStarSection("Tứ Hoá năm sinh",
+      cung.tuHoa.map(h => ({ name: `Hoá ${HOA_LABEL[h.kind]} ${h.sao}`, key: `Hóa ${HOA_LABEL[h.kind]}` }))));
   }
   if (cung.tuHoaDaiHan.length > 0) {
     const list = cung.tuHoaDaiHan.map(h => `ĐH.${HOA_LABEL[h.kind]} ${h.sao}`).join(" · ");
@@ -559,12 +566,14 @@ export function renderCungDetail(container, cung, chart) {
 
   if (cung.vong.length > 0) {
     const vongMap = { TT: "Thái Tuế", BS: "Bác Sĩ", TS: "Trường Sinh" };
-    const list = cung.vong.map(v => `${v.sao} (${vongMap[v.vong]})`).join(" · ");
-    grid.appendChild(makeSection("3 vòng", list));
+    grid.appendChild(makeStarSection("3 vòng sao",
+      cung.vong.map(v => ({ name: `${v.sao} (${vongMap[v.vong]})`, key: v.sao }))));
   }
 
   if (cung.saoLuu.length > 0) {
-    grid.appendChild(makeSection("Sao lưu " + chart.input.namXem, cung.saoLuu.join(" · ")));
+    // saoLuu mang tiền tố "L." — giữ để hiển thị, bỏ khi tra nghĩa.
+    grid.appendChild(makeStarSection("Sao lưu " + chart.input.namXem,
+      cung.saoLuu.map(s => ({ name: s, key: s.replace(/^L\./, "") }))));
   }
 
   container.appendChild(grid);
@@ -579,6 +588,33 @@ function makeSection(title, content) {
   p.textContent = content;
   sec.appendChild(h);
   sec.appendChild(p);
+  return sec;
+}
+
+/**
+ * Section liệt kê sao kèm nghĩa cô đọng (tra sao_nghia.js).
+ * @param {string} title
+ * @param {{name:string, mv?:string, key?:string}[]} items
+ *   - name: chuỗi hiển thị; mv: mã độ sáng (M/V/Đ/B/H) → tô màu; key: khoá tra nghĩa (mặc định = name).
+ */
+function makeStarSection(title, items) {
+  const sec = document.createElement("div");
+  sec.className = "detail-section";
+  const h = document.createElement("h4");
+  h.textContent = title;
+  sec.appendChild(h);
+  const ul = document.createElement("ul");
+  ul.className = "sao-nghia-list";
+  for (const it of items) {
+    const li = document.createElement("li");
+    const mv = it.mv && it.mv !== "-"
+      ? ` <sup class="mv mv-${it.mv}">${escapeHtml(it.mv)}</sup>` : "";
+    const ng = saoNghia(it.key ?? it.name);
+    const desc = ng ? ` <span class="sn-desc">— ${escapeHtml(ng)}</span>` : "";
+    li.innerHTML = `<span class="sn-name">${escapeHtml(it.name)}</span>${mv}${desc}`;
+    ul.appendChild(li);
+  }
+  sec.appendChild(ul);
   return sec;
 }
 

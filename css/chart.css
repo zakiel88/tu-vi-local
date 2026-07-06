@@ -771,6 +771,27 @@
 }
 .detail-section ul { padding-left: var(--sp-4); }
 
+/* Danh sách sao kèm nghĩa cô đọng (modal chi tiết cung) */
+.sao-nghia-list {
+  list-style: none;
+  padding-left: 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.sao-nghia-list li { line-height: 1.5; }
+.sao-nghia-list .sn-name {
+  font-weight: 600;
+  color: var(--color-accent-red);
+}
+.sao-nghia-list .sn-desc { color: var(--color-ink-soft); }
+.sao-nghia-list .mv {
+  font-size: 0.72em;
+  font-weight: 700;
+  vertical-align: super;
+  margin-left: 1px;
+}
+
 /* === Compact mode — ẩn vòng + sao lưu + sao lẻ + L.Hoá === */
 .chart.compact .cung-extra,
 .chart.compact .phu-le-list {
