@@ -253,7 +253,10 @@ export function duongToAm(duongDate, timeZone = DEFAULT_TZ) {
 
 /**
  * Tính chi giờ từ giờ + phút (0-23).
- * Lưu ý: 23:00-23:59 = giờ Tí của NGÀY hiện tại (phái VN).
+ * Lưu ý: 23:00-23:59 là giờ Tí SỚM — theo quy tắc truyền thống (Trung Châu / phần lớn
+ * phần mềm VN), ngày Can-Chi/âm lịch của khoảng này thuộc NGÀY HÔM SAU (ngày cổ điển đổi
+ * tại đầu giờ Tí 23:00, không phải nửa đêm 00:00). Việc đẩy ngày xử lý ở resolveBirthDateTime;
+ * chi giờ vẫn là "Tí" cho cả 23:xx và 00:xx.
  */
 export function tinhChiGio(gio, phut = 0) {
   if (gio === 23 || gio === 0) return "Tí";
@@ -331,23 +334,44 @@ export function convertTimezone(dt, fromTZ, toTZ) {
  * @param {"vn"|"local"} school
  *   - "vn": convert giờ về VN (+7) rồi tính âm lịch (default)
  *   - "local": dùng giờ local + lunar table tại múi giờ local
- * @returns {{ duongUsed, lunar }} duongUsed = datetime đã convert (dùng cho engine)
+ * @returns {{ duongUsed, lunar, gioTySom }} duongUsed = datetime đã dùng để tính âm lịch
+ *   (đã convert timezone nếu cần + đã đẩy sang ngày hôm sau nếu giờ Tí sớm 23:xx).
+ *   gioTySom = true khi giờ tính lịch là 23 (giờ Tí sớm → ngày sang hôm sau).
  */
 export function resolveBirthDateTime(dt, timeZone = DEFAULT_TZ, school = "vn") {
+  // 1. Xác định datetime dương dùng để tính âm lịch (base) + timezone + phái.
+  let base, tzUsed, schoolUsed, tzOriginal;
   if (school === "local") {
     // Dùng giờ local nguyên xi, lunar table theo timezone local
-    const lunar = duongToAm(dt, timeZone);
-    return { duongUsed: dt, lunar, schoolUsed: "local", tzUsed: timeZone };
+    base = dt; tzUsed = timeZone; schoolUsed = "local";
+  } else if (timeZone === DEFAULT_TZ) {
+    // Phái VN, đã ở VN → không cần convert
+    base = dt; tzUsed = DEFAULT_TZ; schoolUsed = "vn";
+  } else {
+    // Phái VN, nơi sinh khác VN → convert sang giờ VN +7
+    base = convertTimezone(dt, timeZone, DEFAULT_TZ); tzUsed = DEFAULT_TZ; schoolUsed = "vn"; tzOriginal = timeZone;
   }
-  // school = "vn" — convert sang giờ VN, lunar theo VN +7
-  if (timeZone === DEFAULT_TZ) {
-    // Đã ở VN, không cần convert
-    const lunar = duongToAm(dt, DEFAULT_TZ);
-    return { duongUsed: dt, lunar, schoolUsed: "vn", tzUsed: DEFAULT_TZ };
-  }
-  const dtVN = convertTimezone(dt, timeZone, DEFAULT_TZ);
-  const lunar = duongToAm(dtVN, DEFAULT_TZ);
-  return { duongUsed: dtVN, lunar, schoolUsed: "vn", tzUsed: DEFAULT_TZ, tzOriginal: timeZone };
+
+  // 2. Giờ Tí sớm (23:00–23:59): ngày Can-Chi/âm lịch tính SANG NGÀY HÔM SAU.
+  //    Đẩy ngày dương +1 (immutable) TRƯỚC khi đổi sang âm lịch. Giờ giữ nguyên 23 (chi Tí).
+  const gioTySom = base.gio === 23;
+  const duongUsed = gioTySom ? addOneCalendarDay(base) : base;
+
+  // 3. Đổi sang âm lịch trên ngày đã xử lý → can-chi ngày/giờ + Tử Vi tự dời đúng.
+  const lunar = duongToAm(duongUsed, tzUsed);
+
+  const result = { duongUsed: { ...duongUsed, gioTySom }, lunar, schoolUsed, tzUsed, gioTySom };
+  if (tzOriginal !== undefined) result.tzOriginal = tzOriginal;
+  return result;
+}
+
+/**
+ * Đẩy ngày dương +1 lịch (immutable), xử lý đúng tràn ngày→tháng→năm + năm nhuận qua JDN.
+ * Giữ nguyên gio/phut và mọi field khác của object nguồn.
+ */
+function addOneCalendarDay(d) {
+  const { dd, mm, yy } = jdToDate(jdFromDate(d.ngay, d.thang, d.nam) + 1);
+  return { ...d, nam: yy, thang: mm, ngay: dd };
 }
 
 // Re-export raw helpers for tests

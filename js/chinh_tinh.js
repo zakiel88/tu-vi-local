@@ -17,23 +17,17 @@ import {
  * @returns {number} chi index Tử Vi 0-11
  */
 export function anTuVi(cucNum, ngayAm) {
-  // Cục chẵn (2/4/6) + ngày lẻ → b LUÔN lẻ → dùng backward formula.
-  // Verify: Mộc Tam(3) day 25 → forward; Hoả Lục(6) day 17 → backward;
-  //         Kim Tứ(4) day 5 → backward (CS-016 = Tử Vi ở Tí).
-  if (cucNum % 2 === 0 && ngayAm % 2 === 1) {
-    const q = Math.ceil(ngayAm / cucNum);
-    const b = q * cucNum - ngayAm;
-    return (CHI_INDEX["Dần"] + (q - 1) - b + 144) % 12;
-  }
-
-  // Normal: tăng q cho đến khi b chẵn
-  let q = Math.ceil(ngayAm / cucNum);
-  let b = q * cucNum - ngayAm;
-  while (b % 2 !== 0) {
-    q += 1;
-    b = q * cucNum - ngayAm;
-  }
-  return (CHI_INDEX["Dần"] + (q - 1) + b) % 12;
+  // Cổ pháp bố Tử Vi: q = ceil(ngày/cục), b = q*cục − ngày (số "mượn").
+  // Từ cung Dần đếm thuận (q−1) tới cung gốc, rồi:
+  //   - b LẺ  → lùi (nghịch) b cung
+  //   - b CHẴN → tiến (thuận) b cung
+  // b lẻ/chẵn KHÔNG tương đương (cục chẵn ∧ ngày lẻ) — vd cục lẻ + ngày chẵn
+  // (Mộc Tam ngày 26) cũng ra b lẻ. Verify: 25/3→Tí, 17/6→Mão, 5/4→Tí (CS-016), 26/3→Dậu.
+  const q = Math.ceil(ngayAm / cucNum);
+  const b = q * cucNum - ngayAm;
+  const base = CHI_INDEX["Dần"] + (q - 1);
+  const pos = b % 2 === 1 ? base - b : base + b;
+  return (pos % 12 + 12) % 12;
 }
 
 /**
