@@ -4,6 +4,7 @@ import { buildChart } from './engine.js?v=20260702a';
 import { renderChart, renderMeta, renderCungDetail } from './render.js';
 import { exportPNG, exportJSON, exportMarkdown, defaultFilename } from './save.js';
 import { saveChart, listCharts, loadChart, deleteChart, renameChart } from './storage.js';
+import { buildTwinPairInputs, findPairRecord } from './twin.js';
 
 // ============================================================
 // Config — API URL auto-detect
@@ -24,6 +25,7 @@ const API_URL = (() => {
 // ============================================================
 const state = {
   currentChart: null,
+  twin: null,          // { truoc: chart, sau: chart, active: 'truoc'|'sau' } khi lập cặp sinh đôi
   compactMode: false,
   settings: {
     showVong: true,
@@ -59,6 +61,8 @@ const analyzeStatus = $("#analyze-status");
 
 const btnSaved = $("#btn-saved");
 const btnSettings = $("#btn-settings");
+
+const twinSwitcher = $("#twin-switcher");
 
 const modalCung = $("#modal-cung");
 const modalCungBody = $("#modal-cung-body");
@@ -126,12 +130,6 @@ function readForm() {
   const gioiTinh = form.gender.value;
   const foreignSchoolEl = document.querySelector('input[name="foreignSchool"]:checked');
   const bangMieuVuongEl = document.querySelector('input[name="bangMieuVuong"]:checked');
-  const sinhDoi = $("#in-sinh-doi").checked
-    ? {
-        thuTu: document.querySelector('input[name="sinhDoiThuTu"]:checked')?.value || "truoc",
-        cungCanh: $("#in-sinh-doi-canh").checked,
-      }
-    : null;
   return {
     nam: parseInt($("#in-year").value, 10),
     thang: parseInt($("#in-month").value, 10),
@@ -145,7 +143,7 @@ function readForm() {
     timeZone: parseFloat($("#in-timezone").value || "7"),
     foreignSchool: foreignSchoolEl?.value || "vn",
     bangMieuVuong: bangMieuVuongEl?.value || "trungchau",
-    sinhDoi,
+    sinhDoi: null,      // lá đơn — cặp sinh đôi dựng riêng qua buildTwinPairInputs
   };
 }
 
@@ -159,32 +157,103 @@ function buildAndRender() {
   // Defer build to next frame so loading UI paints
   requestAnimationFrame(() => {
     try {
-      const input = readForm();
-      const chart = buildChart(input);
-      state.currentChart = chart;
-      renderCurrent();
-      window.TuViNative?.hapticMedium();
-
-      chartMeta.classList.remove("hidden");
-      renderMeta(metaList, chart);
-
-      btnAnalyze.disabled = false;
-      btnSaveChart.disabled = false;
-      btnPrint.disabled = false;
-      btnExportPng.disabled = false;
-      btnExportJson.disabled = false;
-      btnExportMd.disabled = false;
-      if (btnToggleCompact) btnToggleCompact.disabled = false;
-      // Re-apply compact state after re-render
-      if (state.compactMode) {
-        const ch = document.querySelector(".chart");
-        if (ch) ch.classList.add("compact");
+      if ($("#in-sinh-doi").checked) {
+        buildTwinPairAndRender();
+      } else {
+        state.twin = null;
+        showTwinSwitcher(false);
+        state.currentChart = buildChart(readForm());
+        showChartResult();
       }
     } catch (err) {
       console.error(err);
       chartContainer.innerHTML = `<div class="chart-empty"><p style="color:#c0392b"><strong>Lỗi:</strong> ${err.message}</p>
         <p class="hint">Kiểm tra lại input. App hỗ trợ ngày dương 1900-2100, mọi giờ.</p></div>`;
     }
+  });
+}
+
+// Sinh đôi cùng canh giờ → lập CẢ 2 lá 1 lần, lưu cả 2, render bé trước + switcher.
+function buildTwinPairAndRender() {
+  const base = readForm();               // sinhDoi: null
+  const tenTruoc = $("#in-twin-truoc").value;
+  const tenSau = $("#in-twin-sau").value;
+  const pair = buildTwinPairInputs(base, tenTruoc, tenSau);
+  const chartTruoc = buildChart(pair.truoc);
+  const chartSau = buildChart(pair.sau);
+
+  state.twin = { truoc: chartTruoc, sau: chartSau, active: "truoc" };
+  state.currentChart = chartTruoc;
+  showTwinSwitcher(true);
+  setActiveTwinSeg("truoc");
+  showChartResult();
+
+  // Lưu CẢ 2 lá vào storage (label = tên từng bé, fallback tenLabel/can-chi trong saveChart).
+  persistTwinPair(chartTruoc, chartSau, tenTruoc, tenSau);
+}
+
+async function persistTwinPair(chartTruoc, chartSau, tenTruoc, tenSau) {
+  const clean = (s) => (typeof s === "string" && s.trim()) ? s.trim() : undefined;
+  try {
+    await saveChart(chartTruoc, clean(tenTruoc));
+    await saveChart(chartSau, clean(tenSau));
+  } catch (err) {
+    console.warn("Lưu cặp sinh đôi thất bại:", err);
+  }
+}
+
+// Render + kích hoạt toolbar sau khi state.currentChart đã set.
+function showChartResult() {
+  renderCurrent();
+  window.TuViNative?.hapticMedium();
+
+  chartMeta.classList.remove("hidden");
+  renderMeta(metaList, state.currentChart);
+
+  btnAnalyze.disabled = false;
+  btnSaveChart.disabled = false;
+  btnPrint.disabled = false;
+  btnExportPng.disabled = false;
+  btnExportJson.disabled = false;
+  btnExportMd.disabled = false;
+  if (btnToggleCompact) btnToggleCompact.disabled = false;
+  // Re-apply compact state after re-render
+  if (state.compactMode) {
+    const ch = document.querySelector(".chart");
+    if (ch) ch.classList.add("compact");
+  }
+}
+
+// ============================================================
+// Switcher lá sinh đôi
+// ============================================================
+function showTwinSwitcher(show) {
+  twinSwitcher?.classList.toggle("hidden", !show);
+}
+function setActiveTwinSeg(which) {
+  twinSwitcher?.querySelectorAll("button[data-twin]").forEach(b => {
+    const on = b.dataset.twin === which;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", String(on));
+  });
+}
+function renderTwin(which) {
+  if (!state.twin || !state.twin[which]) return;
+  state.twin.active = which;
+  state.currentChart = state.twin[which];
+  setActiveTwinSeg(which);
+  renderCurrent();
+  renderMeta(metaList, state.currentChart);
+  window.TuViNative?.hapticLight?.();
+  // Re-apply compact state after re-render
+  if (state.compactMode) {
+    const ch = document.querySelector(".chart");
+    if (ch) ch.classList.add("compact");
+  }
+}
+if (twinSwitcher) {
+  twinSwitcher.querySelectorAll("button[data-twin]").forEach(btn => {
+    btn.addEventListener("click", () => renderTwin(btn.dataset.twin));
   });
 }
 
@@ -206,6 +275,8 @@ $("#btn-form-reset").addEventListener("click", () => {
   $("#in-year-view").value = new Date().getFullYear();
   $("#in-chi-gio").value = "";
   $("#sinh-doi-opts").classList.add("hidden");   // form.reset bỏ tick nhưng không ẩn panel
+  state.twin = null;
+  showTwinSwitcher(false);
 });
 
 // Compact mode toggle
@@ -462,9 +533,11 @@ async function onSavedAction(act, id) {
     // Sync form
     const i = rec.chart.input;
     fillFormFromInput(i, rec.label);
+    // Lá sinh đôi → tìm lá cặp, dựng switcher (state.currentChart có thể đổi sang lá active)
+    await setupTwinFromLoaded(rec);
     renderCurrent();
     chartMeta.classList.remove("hidden");
-    renderMeta(metaList, rec.chart);
+    renderMeta(metaList, state.currentChart);
     btnAnalyze.disabled = false;
     btnSaveChart.disabled = false;
     btnPrint.disabled = false;
@@ -510,20 +583,44 @@ function fillFormFromInput(i, label) {
     const radio = document.querySelector(`input[name="foreignSchool"][value="${i.foreignSchool}"]`);
     if (radio) radio.checked = true;
   }
-  // Sinh đôi — khôi phục trạng thái + mở panel Nâng cao nếu có
+  // Sinh đôi — khôi phục trạng thái checkbox + mở panel Nâng cao nếu là cặp cùng canh.
+  // (Tên 2 bé điền ở setupTwinFromLoaded khi tìm được lá cặp.)
   const sd = i.sinhDoi || null;
-  $("#in-sinh-doi").checked = !!sd;
-  $("#sinh-doi-opts").classList.toggle("hidden", !sd);
-  if (sd) {
+  const isTwin = !!(sd && sd.cungCanh === true);
+  $("#in-sinh-doi").checked = isTwin;
+  $("#sinh-doi-opts").classList.toggle("hidden", !isTwin);
+  if (isTwin) {
     const advEl = $("#adv-panel");
     if (advEl) advEl.open = true;
-    const thuTuRadio = document.querySelector(`input[name="sinhDoiThuTu"][value="${sd.thuTu}"]`);
-    if (thuTuRadio) thuTuRadio.checked = true;
-    $("#in-sinh-doi-canh").checked = sd.cungCanh === true;
   } else {
-    document.querySelector('input[name="sinhDoiThuTu"][value="truoc"]').checked = true;
-    $("#in-sinh-doi-canh").checked = false;
+    $("#in-twin-truoc").value = "";
+    $("#in-twin-sau").value = "";
   }
+}
+
+// Sau khi load 1 lá đã lưu: nếu là lá sinh đôi cùng canh → tìm lá cặp trong storage,
+// dựng state.twin + switcher; nếu không → tắt switcher.
+async function setupTwinFromLoaded(rec) {
+  const input = rec.chart && rec.chart.input;
+  if (input && input.sinhDoi && input.sinhDoi.cungCanh === true) {
+    const all = await listCharts();
+    const pairRec = findPairRecord(all, rec.chart, rec.id);
+    if (pairRec) {
+      const active = input.sinhDoi.thuTu === "sau" ? "sau" : "truoc";
+      const other = pairRec.chart;
+      const truoc = active === "truoc" ? rec.chart : other;
+      const sau   = active === "sau"   ? rec.chart : other;
+      state.twin = { truoc, sau, active };
+      state.currentChart = state.twin[active];
+      showTwinSwitcher(true);
+      setActiveTwinSeg(active);
+      $("#in-twin-truoc").value = (active === "truoc" ? rec.label : pairRec.label) || "";
+      $("#in-twin-sau").value   = (active === "sau"   ? rec.label : pairRec.label) || "";
+      return;
+    }
+  }
+  state.twin = null;
+  showTwinSwitcher(false);
 }
 
 // ============================================================

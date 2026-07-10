@@ -293,6 +293,36 @@ button { font-family: inherit; cursor: pointer; }
   margin-bottom: var(--sp-3);
 }
 .toolbar-actions { display: flex; gap: var(--sp-2); }
+.toolbar-lead { display: flex; align-items: center; gap: var(--sp-3); }
+
+/* === Switcher lá sinh đôi (segmented) === */
+.twin-switcher {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-purple) 35%, transparent);
+  border-radius: var(--r-md, 8px);
+  background: color-mix(in srgb, var(--color-accent-purple) 7%, transparent);
+}
+.twin-switcher.hidden { display: none; }
+.twin-seg {
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-soft);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.twin-seg:hover { color: var(--color-ink); }
+.twin-seg:focus-visible { outline: 2px solid var(--color-accent-purple); outline-offset: 1px; }
+.twin-seg.active {
+  background: var(--color-accent-purple);
+  color: #fff;
+}
 
 .chart-empty {
   text-align: center;

@@ -128,21 +128,20 @@
           <div class="adv-body">
             <label class="field field-check">
               <input type="checkbox" id="in-sinh-doi" />
-              <span>Sinh đôi?</span>
+              <span>Sinh đôi cùng canh giờ</span>
             </label>
             <div id="sinh-doi-opts" class="sinh-doi-opts hidden">
-              <fieldset class="field-radio">
-                <legend>Thứ tự sinh</legend>
-                <label><input type="radio" name="sinhDoiThuTu" value="truoc" checked /> Bé sinh trước</label>
-                <label><input type="radio" name="sinhDoiThuTu" value="sau" /> Bé sinh sau</label>
-              </fieldset>
-              <label class="field field-check">
-                <input type="checkbox" id="in-sinh-doi-canh" />
-                <span>Hai bé sinh cùng canh giờ (cùng khung 2 tiếng)?</span>
+              <label class="field">
+                <span>Tên bé sinh trước</span>
+                <input type="text" id="in-twin-truoc" placeholder="vd: Bé A" maxlength="60" />
+              </label>
+              <label class="field">
+                <span>Tên bé sinh sau</span>
+                <input type="text" id="in-twin-sau" placeholder="vd: Bé B" maxlength="60" />
               </label>
               <p class="adv-hint">
-                Khác canh giờ → nhập giờ sinh thật của từng bé, mỗi bé một lá riêng.
-                Cùng canh + sinh sau → Mệnh lùi 1 cung theo cổ pháp.
+                Lập CẢ 2 lá cùng lúc: bé trước lá gốc, bé sau Mệnh lùi 1 cung (cổ pháp).
+                Khác canh giờ → tắt mục này, lập từng bé giờ thật.
               </p>
             </div>
           </div>
@@ -163,7 +162,13 @@
     <!-- Chart -->
     <section class="panel panel-chart">
       <div class="chart-toolbar">
-        <h2 class="panel-title">Lá số</h2>
+        <div class="toolbar-lead">
+          <h2 class="panel-title">Lá số</h2>
+          <div id="twin-switcher" class="twin-switcher hidden" role="group" aria-label="Chuyển giữa 2 lá sinh đôi">
+            <button type="button" class="twin-seg active" data-twin="truoc" aria-pressed="true"><span aria-hidden="true">👥</span> Bé trước</button>
+            <button type="button" class="twin-seg" data-twin="sau" aria-pressed="false">Bé sau</button>
+          </div>
+        </div>
         <div class="toolbar-actions">
           <button id="btn-analyze" class="btn btn-primary" disabled aria-label="Phân tích thành Case Study qua Claude" title="Spawn Claude → viết case study v3.0 Trung Châu vào vault"><span aria-hidden="true">📚</span> Phân tích → CS</button>
           <button id="btn-toggle-compact" class="btn btn-ghost" disabled aria-pressed="false" title="Chế độ Gọn — chỉ hiện chính tinh + cát/sát + Hoá">⊟ Gọn</button>
