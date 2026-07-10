@@ -1,6 +1,6 @@
 // engine.js — Orchestrator: input dương lịch + giới tính → chart JSON đầy đủ.
 
-import { duongToAm, tinhChiGio, tinhCanChiGio, isDaiHanThuan, resolveBirthDateTime, DEFAULT_TZ } from './lunar.js';
+import { duongToAm, tinhChiGio, tinhCanChiGio, tinhCanChiThang, isDaiHanThuan, resolveBirthDateTime, DEFAULT_TZ } from './lunar.js';
 import { anCungMenh, anCungThan, an12Cung, anCanCung, tinhThanCu } from './cung.js';
 import { anLuuNguyet } from './luu_nguyet.js';
 import { anCuc, getCucInfo, getMenhChu, getThanChu } from './menh_than_cuc.js';
@@ -47,9 +47,16 @@ export function buildChart(input) {
   const canChiGio = tinhCanChiGio(lich.canChi.ngay.can, chiGio);
   const canNam = lich.canChi.nam.can;
   const chiNam = lich.canChi.nam.chi;
-  const thangAm = lich.am.thang;
+  // Tháng dùng AN SAO — áp luật tháng nhuận 15 ngày (xem thangAnSao). Tháng thường
+  // giữ nguyên; chỉ tháng nhuận nửa sau (ngày ≥16) mới lệch số tháng an sao.
+  const thangAm = thangAnSao(lich.am);
+  const thangNhuanApDung = lich.am.isLeap === true;
   const ngayAm = lich.am.ngay;
   const napAm = lich.napAm;
+  // Can-Chi tháng: đồng bộ với tháng an sao khi tháng nhuận (KHÔNG đổi năm/can chi năm).
+  const canChiThangAnSao = thangNhuanApDung
+    ? tinhCanChiThang(canNam, thangAm)
+    : lich.canChi.thang;
 
   // 2. Cung Mệnh / Thân + 12 cung + Can cung
   const cungMenhChi = anCungMenh(thangAm, chiGio);
@@ -178,8 +185,8 @@ export function buildChart(input) {
         school: resolved.schoolUsed,
         converted: timeZone !== resolved.tzUsed,
       },
-      am: lich.am,
-      canChi: { ...lich.canChi, gio: canChiGio },
+      am: { ...lich.am, thangAmAnSao: thangAm, thangNhuanApDung },
+      canChi: { ...lich.canChi, thang: canChiThangAnSao, gio: canChiGio },
       napAm,
       chiGio,
     },
@@ -213,6 +220,20 @@ export function buildChart(input) {
 // ============================================================
 // Helpers
 // ============================================================
+
+/**
+ * Số tháng dùng để AN SAO theo luật THÁNG NHUẬN 15 ngày (chuẩn phổ biến VN).
+ * - Tháng thường (isLeap=false): giữ nguyên số tháng.
+ * - Tháng nhuận, ngày âm 1–15: dùng chính số tháng đó (X).
+ * - Tháng nhuận, ngày âm 16 trở đi: dùng tháng kế tiếp (X+1; tháng 12 → tháng 1).
+ *   CHỈ đổi SỐ THÁNG dùng an sao — KHÔNG đổi năm/can chi năm.
+ * @param {{thang:number, ngay:number, isLeap?:boolean}} am — object lịch âm (lich.am)
+ * @returns {number} số tháng 1–12 dùng để an sao
+ */
+export function thangAnSao(am) {
+  if (am.isLeap !== true || am.ngay <= 15) return am.thang;
+  return am.thang === 12 ? 1 : am.thang + 1;
+}
 
 function getTuHoaForCung(tuHoa, chiIdx) {
   const result = [];
