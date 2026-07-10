@@ -198,6 +198,62 @@ button { font-family: inherit; cursor: pointer; }
   margin-top: var(--sp-2);
 }
 
+/* === Nâng cao (collapsible) === */
+.adv-panel {
+  border: 1px solid var(--color-line);
+  border-radius: var(--r-sm);
+  padding: 0 var(--sp-3);
+}
+.adv-panel > summary {
+  cursor: pointer;
+  padding: var(--sp-2) 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  list-style: revert;
+}
+.adv-panel[open] > summary { margin-bottom: var(--sp-2); }
+.adv-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-3);
+}
+.field-check {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.field-check input { width: auto; }
+.sinh-doi-opts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--color-line-soft);
+}
+.sinh-doi-opts.hidden { display: none; }
+.adv-hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-ink-soft);
+  line-height: 1.5;
+}
+
+/* === Ghi chú sinh đôi trên bàn (khối giữa) === */
+.sinh-doi-note {
+  margin: var(--sp-2) 0;
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--color-accent-purple);
+  background: color-mix(in srgb, var(--color-accent-purple) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-purple) 30%, transparent);
+  border-radius: var(--r-sm);
+}
+
 /* === Chart meta === */
 .chart-meta {
   margin-top: var(--sp-5);

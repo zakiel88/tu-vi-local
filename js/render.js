@@ -376,6 +376,14 @@ function renderCenter(chart, { showTuVan }) {
   title.textContent = "天 盤 · Thiên Bàn";
   center.appendChild(title);
 
+  // ============ GHI CHÚ SINH ĐÔI (nếu Mệnh lùi cung) ============
+  if (chart.menh.sinhDoiLuiCung) {
+    const note = document.createElement("div");
+    note.className = "sinh-doi-note";
+    note.textContent = "⚇ " + (chart.menh.ghiChu || "Lá sinh đôi — Mệnh lùi 1 cung (cổ pháp)");
+    center.appendChild(note);
+  }
+
   // ============ SECTION 1: BẢN MỆNH ============
   center.appendChild(renderSection("BẢN MỆNH", [
     ["Tháng · Ngày · Giờ", `${chart.lich.canChi.thang.can} ${chart.lich.canChi.thang.chi} · ${chart.lich.canChi.ngay.can} ${chart.lich.canChi.ngay.chi} · ${chart.lich.canChi.gio.can} ${chart.lich.canChi.gio.chi}`],

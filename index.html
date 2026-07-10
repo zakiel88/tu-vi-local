@@ -123,6 +123,31 @@
           </select>
         </label>
 
+        <details id="adv-panel" class="adv-panel">
+          <summary>Nâng cao</summary>
+          <div class="adv-body">
+            <label class="field field-check">
+              <input type="checkbox" id="in-sinh-doi" />
+              <span>Sinh đôi?</span>
+            </label>
+            <div id="sinh-doi-opts" class="sinh-doi-opts hidden">
+              <fieldset class="field-radio">
+                <legend>Thứ tự sinh</legend>
+                <label><input type="radio" name="sinhDoiThuTu" value="truoc" checked /> Bé sinh trước</label>
+                <label><input type="radio" name="sinhDoiThuTu" value="sau" /> Bé sinh sau</label>
+              </fieldset>
+              <label class="field field-check">
+                <input type="checkbox" id="in-sinh-doi-canh" />
+                <span>Hai bé sinh cùng canh giờ (cùng khung 2 tiếng)?</span>
+              </label>
+              <p class="adv-hint">
+                Khác canh giờ → nhập giờ sinh thật của từng bé, mỗi bé một lá riêng.
+                Cùng canh + sinh sau → Mệnh lùi 1 cung theo cổ pháp.
+              </p>
+            </div>
+          </div>
+        </details>
+
         <div class="form-actions">
           <button type="submit" class="btn btn-primary"><span aria-hidden="true">📜</span> Lập lá số</button>
           <button type="button" id="btn-form-reset" class="btn btn-ghost" title="Xoá form">↺ Reset</button>

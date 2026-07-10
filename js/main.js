@@ -126,6 +126,12 @@ function readForm() {
   const gioiTinh = form.gender.value;
   const foreignSchoolEl = document.querySelector('input[name="foreignSchool"]:checked');
   const bangMieuVuongEl = document.querySelector('input[name="bangMieuVuong"]:checked');
+  const sinhDoi = $("#in-sinh-doi").checked
+    ? {
+        thuTu: document.querySelector('input[name="sinhDoiThuTu"]:checked')?.value || "truoc",
+        cungCanh: $("#in-sinh-doi-canh").checked,
+      }
+    : null;
   return {
     nam: parseInt($("#in-year").value, 10),
     thang: parseInt($("#in-month").value, 10),
@@ -139,6 +145,7 @@ function readForm() {
     timeZone: parseFloat($("#in-timezone").value || "7"),
     foreignSchool: foreignSchoolEl?.value || "vn",
     bangMieuVuong: bangMieuVuongEl?.value || "trungchau",
+    sinhDoi,
   };
 }
 
@@ -198,6 +205,7 @@ $("#btn-form-reset").addEventListener("click", () => {
   form.reset();
   $("#in-year-view").value = new Date().getFullYear();
   $("#in-chi-gio").value = "";
+  $("#sinh-doi-opts").classList.add("hidden");   // form.reset bỏ tick nhưng không ẩn panel
 });
 
 // Compact mode toggle
@@ -502,6 +510,20 @@ function fillFormFromInput(i, label) {
     const radio = document.querySelector(`input[name="foreignSchool"][value="${i.foreignSchool}"]`);
     if (radio) radio.checked = true;
   }
+  // Sinh đôi — khôi phục trạng thái + mở panel Nâng cao nếu có
+  const sd = i.sinhDoi || null;
+  $("#in-sinh-doi").checked = !!sd;
+  $("#sinh-doi-opts").classList.toggle("hidden", !sd);
+  if (sd) {
+    const advEl = $("#adv-panel");
+    if (advEl) advEl.open = true;
+    const thuTuRadio = document.querySelector(`input[name="sinhDoiThuTu"][value="${sd.thuTu}"]`);
+    if (thuTuRadio) thuTuRadio.checked = true;
+    $("#in-sinh-doi-canh").checked = sd.cungCanh === true;
+  } else {
+    document.querySelector('input[name="sinhDoiThuTu"][value="truoc"]').checked = true;
+    $("#in-sinh-doi-canh").checked = false;
+  }
 }
 
 // ============================================================
@@ -532,6 +554,15 @@ document.querySelectorAll('input[name="bangMieuVuong"]').forEach(el => {
     if (state.currentChart) buildAndRender();
   });
 });
+
+// Sinh đôi — checkbox bật/tắt hiện 2 control con
+const sinhDoiChk = $("#in-sinh-doi");
+const sinhDoiOpts = $("#sinh-doi-opts");
+if (sinhDoiChk && sinhDoiOpts) {
+  sinhDoiChk.addEventListener("change", () => {
+    sinhDoiOpts.classList.toggle("hidden", !sinhDoiChk.checked);
+  });
+}
 
 // Native: WKWebView không hỗ trợ window.print → ẩn nút In
 if (window.TuViNative?.isNative && btnPrint) btnPrint.style.display = "none";

@@ -59,30 +59,48 @@ export function buildChart(input) {
     : lich.canChi.thang;
 
   // 2. Cung Mệnh / Thân + 12 cung + Can cung
-  const cungMenhChi = anCungMenh(thangAm, chiGio);
-  const cungThanChi = anCungThan(thangAm, chiGio);
+  //
+  // ⭐ LÁ SỐ SINH ĐÔI (cổ pháp "Huynh Đệ làm Mệnh", user chốt 2026-07-10):
+  //   Cùng canh giờ + sinh SAU → cung Mệnh LÙI 1 cung (về vị trí Huynh Đệ gốc).
+  //   Chỉ NHÃN 12 cung + Thân + đại hạn + Mệnh/Thân chủ đổi. TOÀN BỘ sao + Cục +
+  //   Tử Vi + Tứ Hoá + Tuần Triệt GIỮ NGUYÊN vị trí vật lý → mọi thứ physical vẫn
+  //   tính theo cung Mệnh/Thân GỐC.
+  const sinhDoi = input.sinhDoi
+    ? { thuTu: input.sinhDoi.thuTu, cungCanh: input.sinhDoi.cungCanh === true }
+    : null;
+  const sinhDoiLuiCung = !!(sinhDoi && sinhDoi.thuTu === "sau" && sinhDoi.cungCanh === true);
+
+  const cungMenhChiGoc = anCungMenh(thangAm, chiGio);
+  const cungThanChiGoc = anCungThan(thangAm, chiGio);
+  // Vị trí HIỆU LỰC (dùng cho nhãn cung + đại hạn + Mệnh/Thân chủ).
+  const cungMenhChi = sinhDoiLuiCung ? (cungMenhChiGoc - 1 + 12) % 12 : cungMenhChiGoc;
+  const cungThanChi = sinhDoiLuiCung ? (cungThanChiGoc - 1 + 12) % 12 : cungThanChiGoc;
+
   const thanCu = tinhThanCu(cungMenhChi, cungThanChi);
-  const cung12 = an12Cung(cungMenhChi);  // [{tenCung, chi, chiIdx}, ...]
-  const canCung = anCanCung(canNam);
+  const cung12 = an12Cung(cungMenhChi);          // nhãn 12 cung (hiệu lực)
+  const cung12Goc = sinhDoiLuiCung ? an12Cung(cungMenhChiGoc) : cung12;  // vị trí vật lý cung chức
+  const canCung = anCanCung(canNam);             // theo chiIdx — vật lý, không đổi
 
   // 3. Cục + Mệnh chủ + Thân chủ
-  const cuc = anCuc(canNam, CHI[cungMenhChi]);
+  //    Cục = theo cung Mệnh GỐC (số Cục giữ nguyên khi sinh đôi).
+  const cuc = anCuc(canNam, CHI[cungMenhChiGoc]);
   const cucInfo = getCucInfo(cuc);
-  const menhChu = getMenhChu(chiNam);
-  const thanChu = getThanChu(chiNam, phai);
+  // Mệnh chủ / Thân chủ: bình thường theo Chi năm; khi lùi cung → theo chi cung Mệnh/Thân MỚI.
+  const menhChu = sinhDoiLuiCung ? getMenhChu(CHI[cungMenhChi]) : getMenhChu(chiNam);
+  const thanChu = sinhDoiLuiCung ? getThanChu(CHI[cungThanChi], phai) : getThanChu(chiNam, phai);
 
   // 4. 14 chính tinh + group
   const chinhTinh = an14ChinhTinh(cuc, ngayAm);
   const cungChinhTinh = groupChinhTinhByCung(chinhTinh, bangMieuVuong);
   const cachCuc = detectCachCuc(cungChinhTinh);
 
-  // 5. Phụ tinh
+  // 5. Phụ tinh — dùng vị trí cung Mệnh/Thân/Nô Bộc/Tật Ách GỐC (giữ nguyên vật lý).
   const phuTinh = anToanBoPhuTinh({
     thangAm, chiGio, canNam, chiNam, ngayAm,
     gioiTinh: input.gioiTinh,
-    cungMenhChi, cungThanChi,
-    cungNoBocChi: cung12[5].chiIdx,
-    cungTatAchChi: cung12[7].chiIdx,
+    cungMenhChi: cungMenhChiGoc, cungThanChi: cungThanChiGoc,
+    cungNoBocChi: cung12Goc[5].chiIdx,
+    cungTatAchChi: cung12Goc[7].chiIdx,
   });
   const cungPhuTinh = groupPhuTinhByCung(phuTinh);
   const viTriSao = { ...chinhTinh, ...phuTinh };
@@ -175,6 +193,7 @@ export function buildChart(input) {
       bangMieuVuong,
       timeZone,
       foreignSchool,
+      sinhDoi,
     },
     lich: {
       duong: { nam: input.nam, thang: input.thang, ngay: input.ngay },
@@ -202,6 +221,10 @@ export function buildChart(input) {
       menhChu,
       thanChu,
       currentAge,
+      sinhDoiLuiCung,
+      ghiChu: sinhDoiLuiCung
+        ? "Lá sinh đôi — sinh sau cùng canh giờ: Mệnh lùi 1 cung (cổ pháp, ngoài Trung Châu)"
+        : null,
     },
     cung: cungDetails,
     cachCuc,
