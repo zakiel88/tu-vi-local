@@ -324,6 +324,34 @@ button { font-family: inherit; cursor: pointer; }
   color: #fff;
 }
 
+/* === Switcher kiểu bàn (Chân Cơ / Editorial) — mirror twin, accent navy === */
+.theme-switcher {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-navy) 35%, transparent);
+  border-radius: var(--r-md, 8px);
+  background: color-mix(in srgb, var(--color-accent-navy) 7%, transparent);
+}
+.theme-seg {
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-soft);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.theme-seg:hover { color: var(--color-ink); }
+.theme-seg:focus-visible { outline: 2px solid var(--color-accent-navy); outline-offset: 1px; }
+.theme-seg.active {
+  background: var(--color-accent-navy);
+  color: #fff;
+}
+
 .chart-empty {
   text-align: center;
   padding: var(--sp-7) var(--sp-5);

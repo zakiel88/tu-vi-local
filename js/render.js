@@ -1,6 +1,6 @@
 // render.js — Render chart JSON → DOM (HTML 12 cung grid)
 
-import { categorizeStar } from './engine.js';
+import { categorizeStar, categorizeStar4 } from './engine.js';
 import { CHI } from './data.js';
 import { saoNghia } from './sao_nghia.js';
 
@@ -30,10 +30,12 @@ const HOA_LABEL = { loc: "Lộc", quyen: "Quyền", khoa: "Khoa", ky: "Kỵ" };
  * Render chart vào container.
  * @param {HTMLElement} container
  * @param {object} chart kết quả buildChart()
- * @param {object} options { showVong, showLuu, showTuVan, onCungClick }
+ * @param {object} options { showVong, showLuu, showTuVan, onCungClick, theme }
+ *   - theme: "chanco" (mặc định — bàn truyền thống mật độ cao) | "editorial" (bản cũ)
  */
 export function renderChart(container, chart, options = {}) {
-  const { showVong = true, showLuu = true, showTuVan = false, onCungClick } = options;
+  const { showVong = true, showLuu = true, showTuVan = false, onCungClick, theme = "chanco" } = options;
+  const isChanCo = theme === "chanco";
 
   container.innerHTML = "";
   const shell = document.createElement("div");
@@ -41,33 +43,67 @@ export function renderChart(container, chart, options = {}) {
 
   const page = document.createElement("div");
   page.className = "a4-page";
+  if (isChanCo) page.classList.add("page-chanco");
 
-  // A4 header
+  // A4 header — CHUNG 2 theme (giữ selector .a4-title cho native applyAppBranding)
   page.appendChild(renderA4Header(chart));
 
   // Chart frame
   const frame = document.createElement("div");
   frame.className = "chart-frame";
   const grid = document.createElement("div");
-  grid.className = "chart";
+  grid.className = isChanCo ? "chart theme-chanco" : "chart";
+
+  const buildCung = isChanCo ? renderCungChanCo : renderCung;
   for (const cung of chart.cung) {
-    const cell = renderCung(cung, { showVong, showLuu });
+    const cell = buildCung(cung, { showVong, showLuu });
+    // Giữ nguyên hợp đồng onCungClick(cung, chart) — native tap + modal web dùng chung.
     if (onCungClick) cell.addEventListener("click", () => onCungClick(cung, chart));
     grid.appendChild(cell);
   }
-  grid.appendChild(renderCenter(chart, { showTuVan }));
+  grid.appendChild(isChanCo ? renderCenterChanCo(chart, { showTuVan }) : renderCenter(chart, { showTuVan }));
 
-  // Tam Phương Tứ Chính — vẽ từ Mệnh
+  // Tam Phương Tứ Chính — tam hợp Mệnh-Tài-Quan + đối cung (chung 2 theme)
   grid.appendChild(renderTamPhuongTuChinh(chart));
+
+  // Tuần/Triệt đè GIỮA BIÊN 2 cung — div overlay THẬT (html2canvas/snapshot chụp được),
+  // thay cho ::after pseudo góc ô của editorial (chỉ theme chân cơ).
+  if (isChanCo) grid.appendChild(renderTuanTrietOverlay(chart));
 
   frame.appendChild(grid);
   page.appendChild(frame);
 
-  // A4 footer
+  // A4 footer — CHUNG 2 theme (giữ selector .a4-footer-meta cho native applyAppBranding)
   page.appendChild(renderA4Footer(chart));
 
   shell.appendChild(page);
   container.appendChild(shell);
+}
+
+/**
+ * Tuần/Triệt overlay — badge đè lên đường biên giữa 2 cung liền kề.
+ * Toạ độ = trung điểm 2 tâm ô (2 chi luôn kề nhau trên vành 12 → rơi đúng biên chung).
+ * Dùng DIV thật (không pseudo-element) để html2canvas PNG + snapshot native chụp chuẩn.
+ */
+function renderTuanTrietOverlay(chart) {
+  const wrap = document.createElement("div");
+  wrap.className = "tuan-triet-overlay";
+  const addBadge = (chis, cls, label) => {
+    if (!chis || chis.length < 2) return;
+    if (!CHI_TO_GRID[chis[0]] || !CHI_TO_GRID[chis[1]]) return;
+    const [x0, y0] = chiCenter(chis[0]);
+    const [x1, y1] = chiCenter(chis[1]);
+    const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+    const b = document.createElement("div");
+    b.className = `tt-badge ${cls}`;
+    b.style.left = `${(mx / 4) * 100}%`;
+    b.style.top = `${(my / 4) * 100}%`;
+    b.textContent = label;
+    wrap.appendChild(b);
+  };
+  addBadge(chart.tuanTriet.tuan, "tt-tuan", "Tuần");
+  addBadge(chart.tuanTriet.triet, "tt-triet", "Triệt");
+  return wrap;
 }
 
 /**
@@ -351,6 +387,122 @@ function renderCung(cung, opts) {
   return cell;
 }
 
+/**
+ * Ô cung theme CHÂN CƠ — bố cục bàn truyền thống mật độ cao:
+ *   header (TÊN CUNG in hoa | can-chi + range đại hạn) → chính tinh lớn + mã M/V/Đ/B/H
+ *   → Tứ Hoá → phụ tinh CỘT DỌC phân 4 màu (sát/tài-quý/cát/tạp) → đáy (vòng + sao lưu).
+ * Giữ nguyên hook class (cung, POSITION_CLASS, is-menh/than/dh, has-tuan/triet/luu-*)
+ * để click/tap + highlight + vị trí grid + Tuần/Triệt overlay hoạt động như editorial.
+ */
+function renderCungChanCo(cung, opts) {
+  const cell = document.createElement("div");
+  cell.className = `cung cc ${POSITION_CLASS[cung.chi]} hanh-${cung.chiHanh}`;
+  if (cung.isMenh) cell.classList.add("is-menh");
+  if (cung.isThan) cell.classList.add("is-than");
+  if (cung.isDaiHanCurrent) cell.classList.add("is-dh-current");
+  if (cung.hasTuan && cung.hasTriet) cell.classList.add("has-both", "has-tuan");
+  else if (cung.hasTuan) cell.classList.add("has-tuan");
+  else if (cung.hasTriet) cell.classList.add("has-triet");
+  if (cung.hasLuuTuan) cell.classList.add("has-luu-tuan");
+  if (cung.hasLuuTriet) cell.classList.add("has-luu-triet");
+
+  // ---- HEADER: TÊN CUNG (in hoa) | can-chi + range đại hạn ----
+  const head = document.createElement("div");
+  head.className = "cc-head";
+  const nameEl = document.createElement("span");
+  nameEl.className = `cc-cung-name${cung.isMenh ? " is-menh" : ""}`;
+  nameEl.textContent = (cung.isThan && cung.isMenh) ? "Mệnh · Thân" : cung.tenCung;
+  if (cung.isThan && !cung.isMenh) {
+    const t = document.createElement("span");
+    t.className = "than-tag";
+    t.textContent = "Thân";
+    nameEl.appendChild(t);
+  }
+  head.appendChild(nameEl);
+
+  const meta = document.createElement("span");
+  meta.className = "cc-head-meta";
+  const dhStr = cung.daiHanRange
+    ? `<span class="cc-dh${cung.isDaiHanCurrent ? " is-current" : ""}">${cung.daiHanRange}${cung.isDaiHanCurrent ? "★" : ""}</span>`
+    : "";
+  meta.innerHTML = `<span class="cc-canchi">${cung.can} ${cung.chi}</span>${dhStr}`;
+  head.appendChild(meta);
+  cell.appendChild(head);
+
+  // ---- CHÍNH TINH (lớn, đậm) + mã miếu vượng ----
+  const chinhWrap = document.createElement("div");
+  chinhWrap.className = "cc-chinh";
+  if (cung.chinhTinh.length > 0) {
+    for (const ct of cung.chinhTinh) {
+      const s = document.createElement("span");
+      s.className = "cc-chinh-star";
+      s.innerHTML = `<span class="cc-chinh-name">${escapeHtml(ct.sao)}</span>` +
+        (ct.mieuVuong && ct.mieuVuong !== "-" ? `<span class="mv mv-${ct.mieuVuong}">${ct.mieuVuong}</span>` : "");
+      chinhWrap.appendChild(s);
+    }
+  } else {
+    const vcd = document.createElement("span");
+    vcd.className = "cc-vcd";
+    vcd.textContent = "Vô chính diệu";
+    chinhWrap.appendChild(vcd);
+  }
+  cell.appendChild(chinhWrap);
+
+  // ---- TỨ HOÁ ngay dưới chính tinh ----
+  if (cung.tuHoa.length > 0) {
+    const hoaWrap = document.createElement("div");
+    hoaWrap.className = "cc-hoa";
+    for (const h of cung.tuHoa) {
+      const b = document.createElement("span");
+      b.className = `hoa-badge hoa-${h.kind}`;
+      b.textContent = `Hoá ${HOA_LABEL[h.kind]}`;
+      b.title = `${HOA_LABEL[h.kind]} ${h.sao}`;
+      hoaWrap.appendChild(b);
+    }
+    cell.appendChild(hoaWrap);
+  }
+
+  // ---- PHỤ TINH — cột dọc, 4 cấp màu (sát → tài-quý → cát → tạp) ----
+  if (cung.phuTinh.length > 0) {
+    const ul = document.createElement("ul");
+    ul.className = "cc-phu";
+    const order = { sat: 0, taiquy: 1, cat: 2, tap: 3 };
+    const stars = cung.phuTinh
+      .map(sao => ({ sao, k: categorizeStar4(sao) }))
+      .sort((a, b) => order[a.k] - order[b.k]);
+    for (const { sao, k } of stars) {
+      const li = document.createElement("li");
+      li.className = `cc-phu-star cc-${k}`;
+      li.textContent = sao;
+      ul.appendChild(li);
+    }
+    cell.appendChild(ul);
+  }
+
+  // ---- ĐÁY: hàng vòng (TT/BS/TS) + hàng sao lưu (L. / ĐV.) ----
+  const foot = document.createElement("div");
+  foot.className = "cc-foot";
+  if (opts.showVong && cung.vong.length > 0) {
+    const row = document.createElement("div");
+    row.className = "cc-foot-row cc-vong";
+    row.textContent = cung.vong.map(v => `${v.sao}(${v.vong})`).join(" · ");
+    foot.appendChild(row);
+  }
+  const luuParts = [];
+  if (opts.showLuu && cung.saoLuu.length > 0) luuParts.push(cung.saoLuu.join(" · "));  // đã có tiền tố "L."
+  if (cung.luuTuHoa.length > 0) luuParts.push(cung.luuTuHoa.map(h => `L.${HOA_LABEL[h.kind]}`).join(" · "));
+  if (cung.tuHoaDaiHan.length > 0) luuParts.push(cung.tuHoaDaiHan.map(h => `ĐV.${HOA_LABEL[h.kind]}`).join(" · "));
+  if (luuParts.length > 0) {
+    const row = document.createElement("div");
+    row.className = "cc-foot-row cc-luu";
+    row.textContent = luuParts.join("   ");
+    foot.appendChild(row);
+  }
+  if (foot.childNodes.length > 0) cell.appendChild(foot);
+
+  return cell;
+}
+
 function renderStar({ name, mv, kind }) {
   const li = document.createElement("li");
   li.className = `star is-${kind}`;
@@ -376,15 +528,10 @@ function renderCenter(chart, { showTuVan }) {
   title.textContent = "天 盤 · Thiên Bàn";
   center.appendChild(title);
 
-  // ============ GHI CHÚ SINH ĐÔI (nếu Mệnh lùi cung) ============
-  if (chart.menh.sinhDoiLuiCung) {
-    const note = document.createElement("div");
-    note.className = "sinh-doi-note";
-    note.textContent = "⚇ " + (chart.menh.ghiChu || "Lá sinh đôi — Mệnh lùi 1 cung (cổ pháp)");
-    center.appendChild(note);
-  }
+  const sinhDoi = buildSinhDoiNote(chart);
+  if (sinhDoi) center.appendChild(sinhDoi);
 
-  // ============ SECTION 1: BẢN MỆNH ============
+  // SECTION 1: BẢN MỆNH
   center.appendChild(renderSection("BẢN MỆNH", [
     ["Tháng · Ngày · Giờ", `${chart.lich.canChi.thang.can} ${chart.lich.canChi.thang.chi} · ${chart.lich.canChi.ngay.can} ${chart.lich.canChi.ngay.chi} · ${chart.lich.canChi.gio.can} ${chart.lich.canChi.gio.chi}`],
     ["Nạp Âm", chart.lich.napAm || "-"],
@@ -394,15 +541,76 @@ function renderCenter(chart, { showTuVan }) {
     ["Tuần · Triệt", `${chart.tuanTriet.tuan.join("-")}  ·  ${chart.tuanTriet.triet.join("-")}`],
   ]));
 
-  // ============ SECTION 2: TỨ HOÁ NĂM SINH ============
-  const tuHoaSection = document.createElement("div");
-  tuHoaSection.className = "center-section";
-  const tuHoaHeader = document.createElement("div");
-  tuHoaHeader.className = "section-header";
-  tuHoaHeader.textContent = `TỨ HOÁ NĂM SINH (${chart.lich.canChi.nam.can})`;
-  tuHoaSection.appendChild(tuHoaHeader);
-  const tuHoaList = document.createElement("div");
-  tuHoaList.className = "tu-hoa-list";
+  center.appendChild(buildTuHoaSection(chart));
+  const cc = buildCachCucSection(chart);
+  if (cc) center.appendChild(cc);
+  center.appendChild(buildVanHanSection(chart));
+  if (showTuVan) center.appendChild(buildTuVanSection(chart));
+
+  return center;
+}
+
+/**
+ * Khung giữa theme CHÂN CƠ — bảng bản mệnh MỞ RỘNG (thêm Cung Phi Bát Trạch +
+ * Âm Dương Mệnh lý + quan hệ Cục↔Mệnh). Dùng CHUNG các section builder với editorial.
+ */
+function renderCenterChanCo(chart, { showTuVan }) {
+  const center = document.createElement("div");
+  center.className = "chart-center center-chanco";
+
+  const title = document.createElement("div");
+  title.className = "center-title";
+  title.textContent = "命 盤 · Bản Mệnh";
+  center.appendChild(title);
+
+  const sinhDoi = buildSinhDoiNote(chart);
+  if (sinhDoi) center.appendChild(sinhDoi);
+
+  const m = chart.menh;
+  const cp = m.cungPhi;
+  const banMenh = [
+    ["Dương lịch", `${chart.input.ngay}/${chart.input.thang}/${chart.input.nam} · ${pad(chart.input.gio)}:${pad(chart.input.phut)}`],
+    ["Âm lịch", `${chart.lich.am.ngay}/${chart.lich.am.thang}/${chart.lich.am.nam}${chart.lich.am.isLeap ? " (nhuận)" : ""} · ${chart.lich.canChi.nam.can} ${chart.lich.canChi.nam.chi}`],
+    ["Tháng · Ngày · Giờ", `${chart.lich.canChi.thang.can} ${chart.lich.canChi.thang.chi} · ${chart.lich.canChi.ngay.can} ${chart.lich.canChi.ngay.chi} · ${chart.lich.canChi.gio.can} ${chart.lich.canChi.gio.chi}`],
+    ["Nạp Âm", chart.lich.napAm || "-"],
+    ["Cục", `${chart.menh.cuc} (${chart.menh.cucNum} — hành ${chart.menh.cucHanh})`],
+    ["Mệnh · Thân", `${chart.menh.cungChi} · ${chart.menh.thanChi} (Thân cư ${chart.menh.thanCu})`],
+    ["Mệnh · Thân chủ", `${chart.menh.menhChu} · ${chart.menh.thanChu}`],
+  ];
+  if (cp) banMenh.push(["Cung Phi", `${cp.que} ${cp.kyHieu} · ${cp.hanh} · ${cp.phuong} · ${cp.nhom}`]);
+  if (m.amDuongLy) banMenh.push(["Âm Dương Mệnh", m.amDuongLy.label]);
+  if (m.cucMenhLy && m.cucMenhLy.label !== "-") banMenh.push(["Cục ↔ Mệnh", m.cucMenhLy.label]);
+  banMenh.push(["Tuần · Triệt", `${chart.tuanTriet.tuan.join("-")}  ·  ${chart.tuanTriet.triet.join("-")}`]);
+  center.appendChild(renderSection("BẢN MỆNH", banMenh));
+
+  center.appendChild(buildTuHoaSection(chart));
+  const cc = buildCachCucSection(chart);
+  if (cc) center.appendChild(cc);
+  center.appendChild(buildVanHanSection(chart));
+  if (showTuVan) center.appendChild(buildTuVanSection(chart));
+
+  return center;
+}
+
+// ---- Section builders dùng CHUNG cho renderCenter (editorial) + renderCenterChanCo ----
+
+function buildSinhDoiNote(chart) {
+  if (!chart.menh.sinhDoiLuiCung) return null;
+  const note = document.createElement("div");
+  note.className = "sinh-doi-note";
+  note.textContent = "⚇ " + (chart.menh.ghiChu || "Lá sinh đôi — Mệnh lùi 1 cung (cổ pháp)");
+  return note;
+}
+
+function buildTuHoaSection(chart) {
+  const section = document.createElement("div");
+  section.className = "center-section";
+  const header = document.createElement("div");
+  header.className = "section-header";
+  header.textContent = `TỨ HOÁ NĂM SINH (${chart.lich.canChi.nam.can})`;
+  section.appendChild(header);
+  const list = document.createElement("div");
+  list.className = "tu-hoa-list";
   for (const k of ["loc", "quyen", "khoa", "ky"]) {
     const h = chart.tuHoa["hoa" + k.charAt(0).toUpperCase() + k.slice(1)];
     if (!h) continue;
@@ -414,32 +622,31 @@ function renderCenter(chart, { showTuVan }) {
       <span class="th-sao">${escapeHtml(h.sao)}</span>
       <span class="th-cung">${escapeHtml(cungName)} (${CHI[h.chiIdx]})</span>
     `;
-    tuHoaList.appendChild(row);
+    list.appendChild(row);
   }
-  tuHoaSection.appendChild(tuHoaList);
-  center.appendChild(tuHoaSection);
+  section.appendChild(list);
+  return section;
+}
 
-  // ============ SECTION 3: CÁCH CỤC (nếu có) ============
-  if (chart.cachCuc.length > 0) {
-    const ccSection = document.createElement("div");
-    ccSection.className = "center-section";
-    const ccHeader = document.createElement("div");
-    ccHeader.className = "section-header";
-    ccHeader.textContent = "CÁCH CỤC";
-    ccSection.appendChild(ccHeader);
-    const ccBody = document.createElement("div");
-    ccBody.className = "cach-cuc-list";
-    ccBody.innerHTML = chart.cachCuc
-      .map(c => `<span class="cc-item"><strong>${escapeHtml(c.ten)}</strong> <em>(${c.viTriChi})</em></span>`)
-      .join(" · ");
-    ccSection.appendChild(ccBody);
-    center.appendChild(ccSection);
-  }
+function buildCachCucSection(chart) {
+  if (chart.cachCuc.length === 0) return null;
+  const section = document.createElement("div");
+  section.className = "center-section";
+  const header = document.createElement("div");
+  header.className = "section-header";
+  header.textContent = "CÁCH CỤC";
+  section.appendChild(header);
+  const body = document.createElement("div");
+  body.className = "cach-cuc-list";
+  body.innerHTML = chart.cachCuc
+    .map(c => `<span class="cc-item"><strong>${escapeHtml(c.ten)}</strong> <em>(${c.viTriChi})</em></span>`)
+    .join(" · ");
+  section.appendChild(body);
+  return section;
+}
 
-  // ============ SECTION 4: VẬN HẠN ============
-  const vhRows = [
-    ["Tuổi (mụ)", String(chart.menh.currentAge)],
-  ];
+function buildVanHanSection(chart) {
+  const vhRows = [["Tuổi (mụ)", String(chart.menh.currentAge)]];
   if (chart.daiHan.current) {
     const dh = chart.daiHan.current;
     vhRows.push(["Đại hạn", `ĐH${dh.index} ${dh.chi} (${dh.ageStart}-${dh.ageEnd}) · cung ${chart.cung.find(c => c.chiIdx === dh.chiIdx)?.tenCung || "?"}`]);
@@ -447,22 +654,17 @@ function renderCenter(chart, { showTuVan }) {
   vhRows.push(["Tiểu hạn", chart.daiHan.tieuHan.chi]);
   if (chart.daiHan.tuHoaDH) {
     const t = chart.daiHan.tuHoaDH;
-    const compact = `L:${t.hoaLoc.sao} · Q:${t.hoaQuyen.sao} · K:${t.hoaKhoa.sao} · Kỵ:${t.hoaKy.sao}`;
-    vhRows.push(["Tứ Hoá ĐH", compact]);
+    vhRows.push(["Tứ Hoá ĐH", `L:${t.hoaLoc.sao} · Q:${t.hoaQuyen.sao} · K:${t.hoaKhoa.sao} · Kỵ:${t.hoaKy.sao}`]);
   }
-  center.appendChild(renderSection("VẬN HẠN HIỆN TẠI", vhRows));
+  return renderSection("VẬN HẠN HIỆN TẠI", vhRows);
+}
 
-  // ============ SECTION 5: TỬ VÂN (nếu bật) ============
-  if (showTuVan) {
-    const tvRows = [
-      ["Sao chủ Cục", `${chart.tuVan.saoChuCuc.sao} (${chart.tuVan.saoChuCuc.chi})`],
-      ["Lai Nhân", chart.tuVan.laiNhan.tenCung + (chart.tuVan.laiNhan.isManual ? "" : " (default)")],
-      ["Nguyên Thần", `${chart.tuVan.nguyenThan.cungMenh.chi} + ${chart.tuVan.nguyenThan.cungThu2.tenCung}-${chart.tuVan.nguyenThan.cungThu2.chi}`],
-    ];
-    center.appendChild(renderSection("TỬ VÂN (experimental)", tvRows));
-  }
-
-  return center;
+function buildTuVanSection(chart) {
+  return renderSection("TỬ VÂN (experimental)", [
+    ["Sao chủ Cục", `${chart.tuVan.saoChuCuc.sao} (${chart.tuVan.saoChuCuc.chi})`],
+    ["Lai Nhân", chart.tuVan.laiNhan.tenCung + (chart.tuVan.laiNhan.isManual ? "" : " (default)")],
+    ["Nguyên Thần", `${chart.tuVan.nguyenThan.cungMenh.chi} + ${chart.tuVan.nguyenThan.cungThu2.tenCung}-${chart.tuVan.nguyenThan.cungThu2.chi}`],
+  ]);
 }
 
 function renderSection(title, rows) {

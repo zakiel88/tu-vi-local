@@ -23,10 +23,20 @@ const API_URL = (() => {
 // ============================================================
 // State
 // ============================================================
+const THEME_KEY = "tuvi-theme";
+const VALID_THEMES = new Set(["chanco", "editorial"]);
+function loadTheme() {
+  try {
+    const v = localStorage.getItem(THEME_KEY);
+    return VALID_THEMES.has(v) ? v : "chanco";
+  } catch { return "chanco"; }
+}
+
 const state = {
   currentChart: null,
   twin: null,          // { truoc: chart, sau: chart, active: 'truoc'|'sau' } khi lập cặp sinh đôi
   compactMode: false,
+  theme: loadTheme(),  // 'chanco' (mặc định — bàn truyền thống) | 'editorial'
   settings: {
     showVong: true,
     showLuu: true,
@@ -63,6 +73,7 @@ const btnSaved = $("#btn-saved");
 const btnSettings = $("#btn-settings");
 
 const twinSwitcher = $("#twin-switcher");
+const themeSwitcher = $("#theme-switcher");
 
 const modalCung = $("#modal-cung");
 const modalCungBody = $("#modal-cung-body");
@@ -263,6 +274,7 @@ function renderCurrent() {
     showVong: state.settings.showVong,
     showLuu: state.settings.showLuu,
     showTuVan: state.settings.showTuVan,
+    theme: state.theme,
     onCungClick: openCungModal,
   });
 }
@@ -292,6 +304,33 @@ if (btnToggleCompact) {
       ? "Chế độ Đầy đủ — hiện cả vòng + sao lưu + sao lẻ"
       : "Chế độ Gọn — chỉ hiện chính tinh + cát/sát + Hoá";
   });
+}
+
+// Theme switcher (Chân Cơ / Editorial) — persist localStorage, re-render
+// ============================================================
+function setActiveThemeSeg(theme) {
+  themeSwitcher?.querySelectorAll("button[data-theme]").forEach(b => {
+    const on = b.dataset.theme === theme;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", String(on));
+  });
+}
+function applyTheme(theme) {
+  if (!VALID_THEMES.has(theme) || theme === state.theme) { setActiveThemeSeg(state.theme); return; }
+  state.theme = theme;
+  try { localStorage.setItem(THEME_KEY, theme); } catch { /* ignore */ }
+  setActiveThemeSeg(theme);
+  if (state.currentChart) {
+    renderCurrent();
+    // Re-apply compact state after re-render (grid được dựng lại)
+    if (state.compactMode) document.querySelector(".chart")?.classList.add("compact");
+  }
+}
+if (themeSwitcher) {
+  themeSwitcher.querySelectorAll("button[data-theme]").forEach(btn => {
+    btn.addEventListener("click", () => applyTheme(btn.dataset.theme));
+  });
+  setActiveThemeSeg(state.theme);   // init từ localStorage
 }
 
 // Keyboard shortcuts

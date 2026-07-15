@@ -254,6 +254,20 @@ export const SAO_SAT_LIST = new Set([
 // Giữ Set rỗng để compat với engine.js categorizeStar()
 export const SAO_TRUNG_TINH = new Set([]);
 
+// Tài–Quý tinh (con của SAO_CAT_LIST) — dùng cho THEME chân cơ 4 cấp màu (vàng/cam đậm).
+// Tách "tài lộc + quý hiển + khoa danh đài các" khỏi cát tá tinh thường (xanh lá).
+// CHỦ Ý là subset chồng lấn SAO_CAT_LIST: giữ nguyên categorizeStar() cũ (editorial
+// không đổi) — chỉ categorizeStar4() ưu tiên check Set này để ra "taiquy".
+export const SAO_TAI_QUY = new Set([
+  "Lộc Tồn", "Thiên Mã",                 // lộc + mã (tài động)
+  "Thiên Khôi", "Thiên Việt",            // Khôi Việt — quý nhân
+  "Thiên Quan", "Thiên Phúc",            // quan phúc
+  "Ân Quang", "Thiên Quý",               // quý ân
+  "Tam Thai", "Bát Toạ",                 // đài các — vinh hiển
+  "Thai Phụ", "Phong Cáo",               // khoa danh phong tặng
+  "Long Trì", "Phượng Các",              // khoa giáp
+]);
+
 // 6 loại Thân cư theo khoảng cách Mệnh-Thân
 export const THAN_CU_LOAI = {
   0:  "Mệnh",

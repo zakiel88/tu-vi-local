@@ -12,7 +12,8 @@ import { anVongThaiTue, anVongBacSi, anVongTruongSinh, isVongThuan } from './von
 import { anDaiHan, timDaiHanHienTai, anTieuHan, anTuHoaDaiHan } from './dai_han.js';
 import { anLuuNien } from './luu_nien.js';
 import { anTuVanFull } from './tu_van.js';
-import { CHI, CAN, CHI_INDEX, TEN_CUNG_12, NAP_AM, CHI_NGU_HANH, SAO_CAT_LIST, SAO_SAT_LIST, SAO_TRUNG_TINH } from './data.js';
+import { anCungPhi, nguHanhRelation, amDuongMenhLy } from './cung_phi.js';
+import { CHI, CAN, CHI_INDEX, TEN_CUNG_12, NAP_AM, CHI_NGU_HANH, SAO_CAT_LIST, SAO_SAT_LIST, SAO_TRUNG_TINH, SAO_TAI_QUY } from './data.js';
 
 // Lục Cát + Lục Sát (kept for backward compat — render hiện dùng SAO_CAT_LIST/SAO_SAT_LIST)
 const LUC_CAT = new Set(["Tả Phụ", "Hữu Bật", "Văn Xương", "Văn Khúc", "Thiên Khôi", "Thiên Việt"]);
@@ -221,6 +222,13 @@ export function buildChart(input) {
       menhChu,
       thanChu,
       currentAge,
+      // Suy diễn bổ trợ (theme chân cơ khung giữa) — KHÔNG ảnh hưởng an sao:
+      //   • Cung Phi Bát Trạch (Kinh Dịch, theo NĂM ÂM LỊCH + giới tính)
+      //   • Âm Dương Mệnh lý (Dương Nam/Âm Nữ = thuận lý)
+      //   • Quan hệ ngũ hành Cục ↔ hành cung Mệnh
+      cungPhi: anCungPhi(lich.am.nam, input.gioiTinh),
+      amDuongLy: amDuongMenhLy(canNam, input.gioiTinh),
+      cucMenhLy: nguHanhRelation(cucInfo.hanh, CHI_NGU_HANH[CHI[cungMenhChi]]),
       sinhDoiLuiCung,
       ghiChu: sinhDoiLuiCung
         ? "Lá sinh đôi — sinh sau cùng canh giờ: Mệnh lùi 1 cung (cổ pháp, ngoài Trung Châu)"
@@ -314,6 +322,22 @@ export function categorizeStar(name) {
   if (SAO_SAT_LIST.has(name)) return "sat";
   if (SAO_TRUNG_TINH.has(name)) return "trung";
   return "le";
+}
+
+/**
+ * Phân loại sao 4 CẤP MÀU cho THEME chân cơ:
+ *   "sat"    → sát/hình/hoả          (đỏ)
+ *   "taiquy" → tài lộc + quý hiển     (vàng/cam đậm) — ưu tiên trước cát
+ *   "cat"    → lục cát + cát tá tinh  (xanh lá)
+ *   "tap"    → tạp diệu / trung tính  (xám/đen)
+ * Tách riêng khỏi categorizeStar() để KHÔNG đổi layout 2 cột editorial hiện có.
+ */
+export function categorizeStar4(name) {
+  if (SAO_TAI_QUY.has(name)) return "taiquy";
+  const k = categorizeStar(name);
+  if (k === "cat") return "cat";
+  if (k === "sat") return "sat";
+  return "tap";   // trung + le → tạp diệu
 }
 
 /**

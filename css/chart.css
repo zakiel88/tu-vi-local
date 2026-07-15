@@ -804,6 +804,200 @@
   font-size: 15pt;          /* tăng nhỏ trong compact mode để dominate */
 }
 
+/* ============================================================
+ * THEME CHÂN CƠ — bàn tử vi truyền thống mật độ cao (song song editorial).
+ * Chỉ học BỐ CỤC cổ (public domain): lưới viền liền, sao xếp cột dọc phân màu,
+ * Tuần/Triệt đè biên. GIỮ brand + palette Tuyên&Ngọc (KHÔNG bê màu Chân Cơ).
+ * Scope toàn bộ trong `.chart.theme-chanco` → editorial không bị đụng.
+ * ============================================================ */
+
+/* Lưới viền LIỀN, đậm hơn — mật độ cao, ô sát nhau */
+.chart.theme-chanco .cung { border-color: var(--color-line-chanco); }
+.chart.theme-chanco .chart-center { border-color: var(--color-line-chanco); }
+
+/* Ô cung chân cơ — dày, gọn khoảng cách */
+.chart.theme-chanco .cung.cc {
+  padding: 1.4mm 1.6mm 1.6mm;
+  gap: 0.5mm;
+  font-family: var(--font-serif);
+}
+
+/* Header ô: TÊN CUNG (in hoa) | can-chi + range đại hạn */
+.cc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1mm;
+  border-bottom: 1px solid var(--color-line-chanco);
+  padding-bottom: 0.6mm;
+  min-width: 0;
+}
+.cc-cung-name {
+  font-family: var(--font-serif);
+  font-size: 8.8pt;
+  font-weight: 800;
+  color: var(--color-accent-navy);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1.05;
+  word-break: keep-all;      /* tên 2 chữ xuống dòng ở khoảng trắng, không cắt cụt */
+  min-width: 0;
+}
+.cc-cung-name.is-menh { color: var(--color-accent-red); }
+.cc-head-meta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1mm;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+.cc-canchi {
+  font-size: 6.3pt;
+  font-weight: 600;
+  color: var(--color-ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.cc-dh {
+  font-size: 6.3pt;
+  font-weight: 700;
+  color: var(--color-accent-gold);
+}
+.cc-dh.is-current {
+  background: rgba(201, 163, 82, 0.18);
+  padding: 0.2mm 1mm;
+  border-radius: 0.8mm;
+}
+
+/* Chính tinh — lớn, đậm, canh giữa + mã M/V/Đ/B/H */
+.cc-chinh {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0 2mm;
+  margin: 0.6mm 0 0.2mm;
+  text-align: center;
+}
+.cc-chinh-star { display: inline-flex; align-items: baseline; gap: 0.6mm; white-space: nowrap; }
+.cc-chinh-name {
+  font-family: var(--font-serif);
+  font-size: 13.5pt;
+  font-weight: 800;
+  color: var(--color-chinh);
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+.cc-chinh .mv {
+  font-size: 7.5pt;
+  font-weight: 800;
+  font-family: var(--font-sans);
+}
+.cc-vcd {
+  font-family: var(--font-serif);
+  font-size: 10pt;
+  font-style: italic;
+  color: var(--color-ink-mute);
+  opacity: 0.7;
+  letter-spacing: 0.06em;
+}
+
+/* Tứ Hoá — hàng badge ngay dưới chính tinh */
+.cc-hoa {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1mm;
+  margin-bottom: 0.4mm;
+}
+.cc-hoa .hoa-badge { font-size: 6.2pt; padding: 0.3mm 1.2mm; }
+
+/* Phụ tinh — 2 CỘT DỌC, phân 4 cấp màu */
+.cc-phu {
+  list-style: none;
+  margin: 0.2mm 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.6mm;
+  font-family: var(--font-serif);
+  min-width: 0;
+}
+.cc-phu-star {
+  font-size: 7.6pt;
+  line-height: 1.24;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-sat    { color: var(--color-sat); }
+.cc-taiquy { color: var(--color-tai-quy); }
+.cc-cat    { color: var(--color-cat); }
+.cc-tap    { color: var(--color-tap); }
+
+/* Đáy ô: hàng vòng (TT/BS/TS) + hàng sao lưu (L. / ĐV.) */
+.cc-foot {
+  margin-top: auto;
+  padding-top: 0.6mm;
+  border-top: 1px dotted var(--color-line-chanco);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3mm;
+  font-family: var(--font-sans);
+  font-size: 6.6pt;
+  line-height: 1.2;
+}
+.cc-foot-row { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cc-vong { color: var(--color-ink-mute); }
+.cc-luu  { color: var(--color-luu); font-weight: 600; }
+
+/* Ẩn banner Tuần/Triệt pseudo của editorial — chân cơ dùng overlay đè biên */
+.chart.theme-chanco .cung.has-tuan::after,
+.chart.theme-chanco .cung.has-triet::after,
+.chart.theme-chanco .cung.has-both::after,
+.chart.theme-chanco .cung.has-luu-tuan::before,
+.chart.theme-chanco .cung.has-luu-triet::before { content: none; display: none; }
+
+/* Tuần/Triệt overlay — badge đè GIỮA BIÊN 2 cung (div thật, PNG chụp được) */
+.tuan-triet-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+.tt-badge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-sans);
+  font-size: 7pt;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  padding: 0.4mm 1.6mm;
+  border-radius: 1mm;
+  border: 0.3mm solid rgba(255, 255, 255, 0.85);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.tt-tuan  { background: var(--color-tuan); }
+.tt-triet { background: var(--color-triet); }
+
+/* Khung giữa chân cơ — dày rows hơn để đủ chỗ Cung Phi + Âm Dương + Cục↔Mệnh */
+.center-chanco { padding: 3mm 4mm; gap: 1mm; }
+.center-chanco::before { font-size: 46pt; }
+.center-chanco .center-row { grid-template-columns: 24mm 1fr; font-size: 7.8pt; line-height: 1.28; }
+.center-chanco .center-row dt { font-size: 7pt; }
+.center-chanco .center-section { padding: 0.6mm 0; }
+.center-chanco .center-section + .center-section { padding-top: 1mm; }
+.center-chanco .tu-hoa-row { font-size: 7.8pt; }
+.center-chanco .cach-cuc-list { font-size: 7.8pt; }
+
+/* Compact mode cũng áp cho chân cơ — ẩn đáy ô (vòng + sao lưu) */
+.chart.theme-chanco.compact .cc-foot { display: none; }
+.chart.theme-chanco.compact .cung.cc { padding-bottom: 2mm; }
+
 /* === Responsive — scale A4 page xuống nếu screen hẹp === */
 @media (max-width: 900px) {
   .a4-shell { padding: var(--sp-2) 0; }

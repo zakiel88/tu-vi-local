@@ -37,6 +37,11 @@
   --color-le:           #6e7280;     /* sao lẻ neutral */
   --color-luu:          #6c4e9a;     /* sao lưu purple */
 
+  /* Theme chân cơ — 4 cấp màu sao (đỏ sát / xanh lá cát / vàng-cam tài-quý / xám-đen tạp) */
+  --color-tai-quy:      #b3730f;     /* tài-quý = vàng/cam đậm (Lộc Tồn, Mã, Khôi Việt…) */
+  --color-tap:          #4c4f57;     /* tạp diệu = xám/đen */
+  --color-line-chanco:  #ada28c;     /* lưới viền liền, đậm hơn để mật độ cao */
+
   --color-mieu:         #1f8c52;     /* M green */
   --color-vuong:        #228db8;     /* V blue */
   --color-dac:          #4a6ba0;     /* Đ neutral blue */
