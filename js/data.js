@@ -460,13 +460,14 @@ export const TRIET_TABLE = {
 // Thiên Khôi - Thiên Việt (theo Can năm) — phái VN
 // Format: [Khôi_chi, Việt_chi]
 // Verify CS-013 (Mậu): Khôi Sửu, Việt Mùi ✓
-// Verify CS-016 (Canh): Khôi NGỌ, Việt DẦN (chart software phái VN dùng Canh khác Tân — đảo cặp)
+// Verify CS-016 (Canh): Khôi NGỌ, Việt DẦN
+// Canh & Tân cùng Khôi Ngọ / Việt Dần theo Vương Đình Chi T1 §1.8.13 (dị bản "庚辛逢馬虎")
 export const KHOI_VIET = {
   "Giáp": ["Sửu", "Mùi"], "Mậu":  ["Sửu", "Mùi"],
   "Ất":   ["Tí",  "Thân"], "Kỷ":  ["Tí",  "Thân"],
   "Bính": ["Hợi", "Dậu"], "Đinh": ["Hợi", "Dậu"],
-  "Canh": ["Ngọ", "Dần"],   // Canh: Khôi Ngọ, Việt Dần (đảo so với Tân)
-  "Tân":  ["Dần", "Ngọ"],   // Tân: Khôi Dần, Việt Ngọ
+  "Canh": ["Ngọ", "Dần"],   // Canh: Khôi Ngọ, Việt Dần (VĐC §1.8.13)
+  "Tân":  ["Ngọ", "Dần"],   // Tân: Khôi Ngọ, Việt Dần (VĐC §1.8.13 — giống Canh)
   "Nhâm": ["Mão", "Tỵ"],  "Quý":  ["Mão", "Tỵ"],
 };
 
