@@ -184,7 +184,12 @@ export const MENH_CHU = {
   "Ngọ":  "Phá Quân",
 };
 
-// Thân chủ — phái VN (đảo Ngọ-Tuất so với TQ)
+// Thân chủ — phái VN điều chỉnh khác TQ (Trung Châu) 3 ô:
+//   Tí:   TQ Linh Tinh  → VN Hoả Tinh
+//   Ngọ:  TQ Hoả Tinh   → VN Văn Xương
+//   Tuất: TQ Văn Xương  → VN Hoả Tinh
+// Nguồn: Trung Châu T1 §1.8.39 (khẩu quyết "Tí Ngọ an thân Linh Hoả tu" — Tí→Linh, Ngọ→Hoả)
+//        + phái VN điều chỉnh. THAN_CHU_VN giữ nguyên (đúng chủ đích Case Study dùng phái VN).
 export const THAN_CHU_VN = {
   "Tí":   "Hoả Tinh", "Ngọ": "Văn Xương",   // VN: Ngọ → Văn Xương (đảo TQ)
   "Sửu":  "Thiên Tướng", "Mùi":  "Thiên Tướng",
@@ -194,8 +199,9 @@ export const THAN_CHU_VN = {
   "Tỵ":   "Thiên Cơ", "Hợi":  "Thiên Cơ",
 };
 
+// Thân chủ — phái TQ Trung Châu (Vương Đình Chi T1 §1.8.39)
 export const THAN_CHU_TQ = {
-  "Tí":   "Hoả Tinh", "Ngọ": "Hoả Tinh",
+  "Tí":   "Linh Tinh", "Ngọ": "Hoả Tinh",
   "Sửu":  "Thiên Tướng", "Mùi":  "Thiên Tướng",
   "Dần":  "Thiên Lương", "Thân": "Thiên Lương",
   "Mão":  "Thiên Đồng",  "Dậu":  "Thiên Đồng",
