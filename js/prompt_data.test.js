@@ -6,7 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildChart } from './engine.js';
-import { buildNguyenLieu } from './prompt_data.js';
+import { buildNguyenLieu, trucKyBlock } from './prompt_data.js';
 
 const FIXTURE = { nam: 1990, thang: 8, ngay: 15, gio: 10, phut: 0, gioiTinh: 'nam', namXem: 2026 };
 const chart = buildChart(FIXTURE);
@@ -63,4 +63,73 @@ test('đất địa chi Mệnh: Dần = Tứ Sinh', () => {
 test('không rò rỉ mã độ sáng thô M/V/Đ/B/H (đã đổi sang nhãn đầy đủ)', () => {
   // chính tinh phải hiện "(Miếu)"/"(Bình)"… chứ không phải "(M)"/"(B)"
   assert.doesNotMatch(out, /\((M|V|Đ|B|H)\)/);
+});
+
+// ── Feature 1: Trục 4 bậc Kỵ trên tuyến xung ──────────────────────────
+test('trục 4 bậc Kỵ: Phụ Mẫu(Kỷ) phi Kỵ Văn Khúc nhập đối cung = Lưu/Xạ Xuất Kỵ', () => {
+  assert.match(out, /Trục 4 bậc Kỵ trên tuyến xung/);
+  assert.match(
+    out,
+    /- Phụ Mẫu\(Mão\) can Kỷ phi Hoá Kỵ \(Văn Khúc\) → đối cung Tật Ách\(Dậu\): Lưu\/Xạ Xuất Kỵ/,
+  );
+});
+
+// mini-chart tổng hợp để test các nhánh Nghịch Thủy / Thủy Tiết (không có trong fixture).
+function mkChart(canNam, phai, overrides) {
+  const CHI = ['Tí', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi'];
+  const cung = CHI.map((chi, i) => ({
+    chiIdx: i,
+    chi,
+    tenCung: i === 0 ? 'Mệnh' : i === 6 ? 'Thiên Di' : `Cung${i}`,
+    can: 'Giáp',
+    chinhTinh: [],
+    phuTinh: [],
+  }));
+  for (const o of overrides) Object.assign(cung[o.chiIdx], o);
+  return { input: { phai }, lich: { canChi: { nam: { can: canNam } } }, cung };
+}
+
+test('trục 4 bậc Kỵ: đối cung có Kỵ năm sinh, không tự hóa = Nghịch Thủy Kỵ', () => {
+  // canNam Đinh → Kỵ = Cự Môn; Mệnh(Tí,can Đinh) phi Kỵ Cự Môn nhập đối cung Ngọ.
+  // Cự Môn đóng Ngọ = Kỵ năm sinh tọa đối cung; can Ngọ = Giáp (Lộc Liêm/Kỵ Dương) → không tự hóa.
+  const chart = mkChart('Đinh', 'vn', [
+    { chiIdx: 0, can: 'Đinh' },
+    { chiIdx: 6, can: 'Giáp', chinhTinh: [{ sao: 'Cự Môn', mieuVuong: 'M' }] },
+  ]);
+  const s = trucKyBlock(chart);
+  assert.match(s, /- Mệnh\(Tí\) can Đinh phi Hoá Kỵ \(Cự Môn\) → đối cung Thiên Di\(Ngọ\): Nghịch Thủy Kỵ/);
+});
+
+test('trục 4 bậc Kỵ: đối cung có Kỵ năm sinh nhưng tự hóa = Thủy Tiết Kỵ', () => {
+  // như trên nhưng can Ngọ = Tân → Hoá Lộc = Cự Môn (đang tọa Ngọ) → tự hóa chặn thủng.
+  const chart = mkChart('Đinh', 'vn', [
+    { chiIdx: 0, can: 'Đinh' },
+    { chiIdx: 6, can: 'Tân', chinhTinh: [{ sao: 'Cự Môn', mieuVuong: 'M' }] },
+  ]);
+  const s = trucKyBlock(chart);
+  assert.match(s, /→ đối cung Thiên Di\(Ngọ\): Thủy Tiết Kỵ/);
+});
+
+// ── Feature 2: Tứ hoá vận hạn nhập cung ÂM/DƯƠNG (Khâm Thiên) ──────────
+test('âm/dương cung: đại vận + lưu niên tứ hoá gắn nhãn ÂM(lợi)/DƯƠNG(danh)', () => {
+  assert.match(out, /Tứ hoá vận hạn nhập cung ÂM\/DƯƠNG/);
+  // Đại vận can Tân: Hoá Lộc Cự Môn → Huynh Đệ (cung âm = lợi)
+  assert.match(out, /Đại vận \(Điền Trạch Tỵ, can Tân\):/);
+  assert.match(out, /Hoá Lộc Cự Môn → Huynh Đệ \[ÂM\(lợi\)\]/);
+  // Lưu niên can Bính: Hoá Kỵ Liêm Trinh → Tài Bạch (cung dương = danh)
+  assert.match(out, /Lưu niên \(Bính Ngọ\):/);
+  assert.match(out, /Hoá Kỵ Liêm Trinh → Tài Bạch \[DƯƠNG\(danh\)\]/);
+});
+
+// ── Feature 3: Cách cục — trạng thái Thành/Giảm/Phá theo Tứ Hoá năm sinh ──
+test('cách cục trạng thái: THÀNH / PHÁ / giảm sắc theo Tứ Hoá năm sinh Canh', () => {
+  assert.match(out, /Cách cục — trạng thái Thành\/Giảm\/Phá/);
+  // Canh: Kỵ = Thiên Đồng → Đồng Cự phá cách
+  assert.match(out, /- Đồng Cự \(Sửu\) \[Thiên Đồng \+ Cự Môn\]: PHÁ CÁCH/);
+  // Canh: Quyền = Vũ Khúc → Vũ Tướng thành cách
+  assert.match(out, /- Vũ Tướng \(Dần\) \[Vũ Khúc \+ Thiên Tướng\]: THÀNH CÁCH/);
+  // Canh: Lộc = Thái Dương → Nhật Lương thành cách
+  assert.match(out, /- Nhật Lương \(Mão\) \[Thái Dương \+ Thiên Lương\]: THÀNH CÁCH/);
+  // Liêm Phủ: không sao nào bị Canh hoá → giảm sắc
+  assert.match(out, /- Liêm Phủ \(Tuất\) \[Liêm Trinh \+ Thiên Phủ\]: giảm sắc/);
 });

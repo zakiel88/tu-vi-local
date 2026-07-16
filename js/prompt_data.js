@@ -202,6 +202,133 @@ function phiHoaBlock(chart) {
   return `【Phi tinh tứ hoá】(can mỗi cung phi Hoá Lộc/Quyền/Khoa/Kỵ vào cung nào — cung "đem gì cho" cung khác; Hoá Kỵ phi nhập = điểm vướng)\n${lines.join('\n')}`;
 }
 
+// ── Khâm Thiên môn: 6 cung DƯƠNG (chủ "danh") / 6 cung ÂM (chủ "lợi") ──
+// Nguồn: Tứ Hóa phái §1.7.1 (tu_hoa_t2 tr.31–32) + [[Hỏi Đáp Chuyên Đề - Sự Nghiệp Tài Phú]] 6.1.16.
+const DUONG_CUNG = ['Mệnh', 'Phu Thê', 'Tài Bạch', 'Thiên Di', 'Quan Lộc', 'Phúc Đức'];
+const AM_CUNG = ['Huynh Đệ', 'Tử Tức', 'Tật Ách', 'Nô Bộc', 'Điền Trạch', 'Phụ Mẫu'];
+const amDuongLabel = (name) =>
+  AM_CUNG.includes(name) ? 'ÂM(lợi)' : DUONG_CUNG.includes(name) ? 'DƯƠNG(danh)' : '(?)';
+
+const hoaTableOf = (phai) => (phai === 'tq' ? TU_HOA_TQ : TU_HOA_VN);
+
+/**
+ * Trục 4 bậc Kỵ trên tuyến xung (Bắc phái Khâm Thiên — [[Phi Tinh Kỵ Phổ]] §5.4).
+ * CHỈ hình học: cung nào can phi Hoá Kỵ nhập ĐÚNG đối cung (+6) → phân bậc theo
+ * đối cung có Kỵ [năm sinh] tọa thủ / có tự hóa chặn hay không:
+ *   - đối cung KHÔNG có Kỵ năm sinh → Lưu/Xạ Xuất Kỵ (Kỵ chảy ra, không giữ).
+ *   - có Kỵ năm sinh, KHÔNG tự hóa → Nghịch Thủy Kỵ (chặn, dội về).
+ *   - có Kỵ năm sinh NHƯNG đối cung tự Hoá Kỵ/Lộc → Thủy Tiết Kỵ (đập thủng, Tam Kỵ).
+ * Ý nghĩa cát/hung + điều kiện tinh (tam hợp bản mệnh…) do prompt luận.
+ */
+export function trucKyBlock(chart) {
+  const phai = chart.input?.phai || 'vn';
+  const table = hoaTableOf(phai);
+  const viTri = buildViTriSao(chart);
+  const canNam = chart.lich?.canChi?.nam?.can;
+  const kyNamChi = canNam && table[canNam] ? viTri[table[canNam][3]] : undefined;
+
+  const lines = [];
+  for (const cung of chart.cung) {
+    const row = table[cung.can];
+    if (!row) continue;
+    const kyStar = row[3];
+    const land = viTri[kyStar];
+    if (land === undefined) continue;
+    const doi = mod12(cung.chiIdx + 6);
+    if (land !== doi) continue; // chỉ tính khi phi Kỵ nhập ĐÚNG đối cung (tuyến xung)
+
+    const B = byChi(chart, doi);
+    const hasKyNam = kyNamChi === doi; // Kỵ [năm sinh] tọa thủ đối cung
+    const Bstars = starSetOf(B);
+    const tuRow = table[B.can] || [];
+    const tuHoaChan = Bstars.has(tuRow[0]) || Bstars.has(tuRow[3]); // đối cung tự Hoá Lộc/Kỵ
+
+    let bac, tone;
+    if (!hasKyNam) {
+      bac = 'Lưu/Xạ Xuất Kỵ (Kỵ chảy ra đối cung, không giữ)';
+      tone = 'trung tính';
+    } else if (!tuHoaChan) {
+      bac = 'Nghịch Thủy Kỵ (đối cung có Kỵ năm sinh chặn ⇒ dội ngược về)';
+      tone = 'cát';
+    } else {
+      bac = 'Thủy Tiết Kỵ (đối cung có Kỵ năm sinh NHƯNG tự hóa ⇒ đập thủng, Tam Kỵ)';
+      tone = 'hung';
+    }
+    const laTaiQuan = cung.tenCung === 'Mệnh' || cung.tenCung === 'Tài Bạch' || cung.tenCung === 'Quan Lộc';
+    const extra = !hasKyNam && laTaiQuan ? ` [phát từ ${cung.tenCung} → có thể luận Thủy Mệnh Kỵ]` : '';
+    lines.push(
+      `- ${cung.tenCung}(${cung.chi}) can ${cung.can} phi Hoá Kỵ (${kyStar}) → đối cung ${B.tenCung}(${B.chi}): ${bac} [${tone}]${extra}`,
+    );
+  }
+  if (!lines.length) return '';
+  return `【Trục 4 bậc Kỵ trên tuyến xung】(cung phi Hoá Kỵ nhập ĐÚNG đối cung; phân bậc theo đối cung có Kỵ [năm sinh] chặn / tự hóa hay không — Bắc phái Khâm Thiên. Điều kiện tinh & ý nghĩa cát-hung: prompt luận)\n${lines.join('\n')}`;
+}
+
+/**
+ * Tứ hoá vận hạn (đại vận + lưu niên) nhập cung ÂM (lợi) hay DƯƠNG (danh) — Khâm Thiên.
+ * CHỈ hình học: bay đâu + nhãn âm/dương. Diễn giải "danh/lợi/xuất siêu" do prompt luận.
+ */
+export function amDuongHoaBlock(chart) {
+  const phai = chart.input?.phai || 'vn';
+  const viTri = buildViTriSao(chart);
+  const rows = [];
+
+  const dv = chart.cung.find((c) => c.isDaiHanCurrent);
+  if (dv) {
+    rows.push(`- Đại vận (${dv.tenCung} ${dv.chi}, can ${dv.can}):`);
+    for (const h of hoaLanding(chart, viTri, dv.can, phai)) {
+      rows.push(`    · ${h.hoa} ${h.sao} → ${h.cung} [${amDuongLabel(h.cung)}]`);
+    }
+  }
+
+  const lnCan = chart.luuNien?.canChi?.can;
+  if (lnCan) {
+    const lnChi = chart.luuNien.canChi.chi;
+    rows.push(`- Lưu niên (${lnCan} ${lnChi}):`);
+    for (const h of hoaLanding(chart, viTri, lnCan, phai)) {
+      rows.push(`    · ${h.hoa} ${h.sao} → ${h.cung} [${amDuongLabel(h.cung)}]`);
+    }
+  }
+
+  if (!rows.length) return '';
+  return `【Tứ hoá vận hạn nhập cung ÂM/DƯƠNG】(Khâm Thiên: 6 cung DƯƠNG=danh — Mệnh/Phu Thê/Tài/Di/Quan/Phúc; 6 cung ÂM=lợi — Huynh/Tử/Tật/Nô/Điền/Phụ. Hoá cát nhập cung âm ⇒ thiên "lợi/tiền"; nhập cung dương ⇒ thiên "danh")\n${rows.join('\n')}`;
+}
+
+/**
+ * Cách cục — trạng thái Thành / Giảm / Phá theo Tứ Hoá NĂM SINH.
+ * CHỈ hình học: Lộc/Quyền/Khoa năm sinh chạm sao đôi định cách ⇒ THÀNH; Kỵ chạm ⇒ PHÁ;
+ * không chạm ⇒ giảm sắc. Tứ Sát/Không Kiếp & vận hạn để prompt luận thêm.
+ */
+export function cachCucTrangThaiBlock(chart) {
+  const list = chart.cachCuc || [];
+  if (!list.length) return '';
+  const phai = chart.input?.phai || 'vn';
+  const table = hoaTableOf(phai);
+  const canNam = chart.lich?.canChi?.nam?.can;
+  const row = canNam ? table[canNam] : null;
+  if (!row) return '';
+  const [loc, quyen, khoa, ky] = row;
+  const hoaOf = (s) => (s === loc ? 'Lộc' : s === quyen ? 'Quyền' : s === khoa ? 'Khoa' : s === ky ? 'Kỵ' : '');
+
+  const lines = list.map((cc) => {
+    const catHit = cc.saoList.filter((s) => s === loc || s === quyen || s === khoa);
+    const kyHit = cc.saoList.filter((s) => s === ky);
+    let state, detail;
+    if (kyHit.length) {
+      state = 'PHÁ CÁCH';
+      detail = `Hoá Kỵ năm sinh đóng sao chủ ${kyHit.map((s) => `${s}(Kỵ)`).join(', ')}`;
+    } else if (catHit.length) {
+      state = 'THÀNH CÁCH';
+      detail = `Hoá cát năm sinh vào sao chủ ${catHit.map((s) => `${s}(${hoaOf(s)})`).join(', ')}`;
+    } else {
+      state = 'giảm sắc';
+      detail = 'Tứ Hoá năm sinh không chạm sao chủ cách (thiếu lửa kích hoạt)';
+    }
+    return `- ${cc.ten} (${cc.viTriChi}) [${cc.saoList.join(' + ')}]: ${state} — ${detail}.`;
+  });
+  return `【Cách cục — trạng thái Thành/Giảm/Phá theo Tứ Hoá năm sinh】(Lộc/Quyền/Khoa chạm sao chủ ⇒ thành; Kỵ chạm ⇒ phá; không chạm ⇒ giảm sắc. Chỉ xét Tứ Hoá năm sinh chạm sao đôi định cách — Tứ Sát/Không Kiếp & vận hạn do prompt luận thêm)\n${lines.join('\n')}`;
+}
+
 /** Tính chất "đất" (địa chi) của cung Mệnh. */
 function datBlock(chart) {
   const menh = byName(chart, 'Mệnh');
@@ -230,6 +357,9 @@ export function buildNguyenLieu(chart) {
     giapBlock(chart),
     kienTinhBlock(chart),
     phiHoaBlock(chart),
+    trucKyBlock(chart),
+    amDuongHoaBlock(chart),
+    cachCucTrangThaiBlock(chart),
     datBlock(chart),
   ].filter(Boolean);
 
